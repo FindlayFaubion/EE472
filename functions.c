@@ -7,7 +7,7 @@ void TrainCom(void* d) {
     TrainComData* tcd = (TrainComData*) d;
 //  
 // rand = RandomInt(0, 2);
-// if (rand == 0) 
+// if (rand == 0)
 // {
 //   west = true;
 // }
@@ -62,6 +62,9 @@ void SwitchControl(void* d) {
 
 void NorthTrain(void* d) {
     NorthTrainData* ntd = (NorthTrainData*) d;
+    if (d.north) {
+        //dothings
+    }
 //  
 //    if (North && )
 }
