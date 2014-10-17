@@ -1,10 +1,8 @@
 
 #include "functions.h"
 
-
-
 void TrainCom(void* d) {
-    TrainComData* tcd = (TrainComData*) d;
+    trainComData* tcd = (trainComData*) d;
 //  
 // rand = RandomInt(0, 2);
 // if (rand == 0)
@@ -27,7 +25,7 @@ void TrainCom(void* d) {
   
 
 void SwitchControl(void* d) {  
-    SwitchControlData* sc = (SwitchControlData*) d;
+    switchControlData* sc = (switchControlData*) d;
 //  if (trainPresent || !gridlockChecked) 
 //  {
 //    gridlockedChecked = true;
@@ -61,8 +59,8 @@ void SwitchControl(void* d) {
 
 
 void NorthTrain(void* d) {
-    NorthTrainData* ntd = (NorthTrainData*) d;
-    if (d.north) {
+    northTrainData* ntd = (northTrainData*) d;
+    if () {
         //dothings
     }
 //  
@@ -71,19 +69,19 @@ void NorthTrain(void* d) {
    
 
 void EastTrain(void* d) {
-    EastTrainData* etd = (EastTrainData*) d;
+    eastTrainData* etd = (eastTrainData*) d;
 //  
 }
 
 
 void WestTrain(void* d) {
-    WestTrainData* wtd = (WestTrainData*) d;
+    westTrainData* wtd = (westTrainData*) d;
 //  
 }
 
 
 void Schedule(void* d) {
-    ScheduleData* sd = (ScheduleData*) d;
+    scheduleData* sd = (scheduleData*) d;
 //  globalCount = globalCount + 1;
 //  //display globalCount: use /,% to get necessary numbers to display
 //  //delay ***ms
@@ -91,51 +89,51 @@ void Schedule(void* d) {
 }
 
 // Initialize the task data to point to global state variables
-void TrainInit(TrainComData* TCdata, SwitchControlData* SCdata, NorthTrainData* NTdata, 
-                EastTrainData* ETdata, WestTrainData* WTdata, ScheduleData* Sdata, 
+void TrainInit(trainComData* tcd, switchControlData* scd, northTrainData* ntd, 
+                eastTrainData* etd, westTrainData* wtd, scheduleData* sd, 
                 bool* north, bool* east, bool* west, bool* gridlock, bool* trainPresent, 
                 unsigned int* trainSize, unsigned int* globalCount) {
-    // north train
-    TCdata->north = north;
-    TCdata->west = west;
-    TCdata->east = east;
-    TCdata->gridlock = gridlock;
-    TCdata->trainPresent = trainPresent;
-    TCdata->trainSize = trainSize;
-    TCdata->globalCount = globalCount;
+    // train communication
+    tcd->north = north;
+    tcd->west = west;
+    tcd->east = east;
+    tcd->gridlock = gridlock;
+    tcd->trainPresent = trainPresent;
+    tcd->trainSize = trainSize;
+    tcd->globalCount = globalCount;
   
     // switch control
-    SCdata->north = north;
-    SCdata->west = west;
-    SCdata->east = east;
-    SCdata->gridlock = gridlock;
-    SCdata->trainPresent = trainPresent;
-    SCdata->trainSize = trainSize;
-    SCdata->globalCount = globalCount;
+    scd->north = north;
+    scd->west = west;
+    scd->east = east;
+    scd->gridlock = gridlock;
+    scd->trainPresent = trainPresent;
+    scd->trainSize = trainSize;
+    scd->globalCount = globalCount;
   
     // north data
-    NTdata->north = north;
-    NTdata->gridlock = gridlock;
-    NTdata->trainPresent = trainPresent;
-    NTdata->trainSize = trainSize;
-    NTdata->globalCount = globalCount;
+    ntd->north = north;
+    ntd->gridlock = gridlock;
+    ntd->trainPresent = trainPresent;
+    ntd->trainSize = trainSize;
+    ntd->globalCount = globalCount;
     
     // east data 
-    ETdata->east = east;
-    ETdata->gridlock = gridlock;
-    ETdata->trainPresent = trainPresent;
-    ETdata->trainSize = trainSize;
-    ETdata->globalCount = globalCount;
+    etd->east = east;
+    etd->gridlock = gridlock;
+    etd->trainPresent = trainPresent;
+    etd->trainSize = trainSize;
+    etd->globalCount = globalCount;
     
     // west data
-    WTdata->west = west;
-    WTdata->gridlock = gridlock;
-    WTdata->trainPresent = trainPresent; 
-    WTdata->trainSize = trainSize;
-    WTdata->globalCount = globalCount;
+    wtd->west = west;
+    wtd->gridlock = gridlock;
+    wtd->trainPresent = trainPresent; 
+    wtd->trainSize = trainSize;
+    wtd->globalCount = globalCount;
     
     // schedule data 
-    Sdata->globalCount = globalCount;
+    sd->globalCount = globalCount;
 }
 
 // Generate a random number between the given bounds

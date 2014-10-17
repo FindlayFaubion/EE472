@@ -1,8 +1,5 @@
-//#ifndef HEADER_F 
-//#define HEADER_F
-
-// test commit 
-//another test
+#ifndef HEADER_F 
+#define HEADER_F
 
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
@@ -14,12 +11,12 @@
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 
-
+//Define boolean type 
 enum myBool { FALSE = 0, TRUE = 1 };
 typedef enum myBool bool;
 
-//TrainComdata
-typedef struct{
+//TrainCom data
+typedef struct {
   bool* north;
   bool* east;
   bool* west;
@@ -27,10 +24,10 @@ typedef struct{
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
-} TrainComData;
+} trainComData;
 
 //SwitchControldata
-typedef struct{
+typedef struct {
   bool* north;
   bool* east;
   bool* west;
@@ -38,55 +35,57 @@ typedef struct{
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
-} SwitchControlData;
+} switchControlData;
 
 //NorthTraindata
-typedef struct{
+typedef struct {
   bool* north;
   bool* gridlock;
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
-} NorthTrainData;
+} northTrainData;
 
 //EastTraindata
-typedef struct{
+typedef struct {
   bool* east;
   bool* gridlock;
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
-} EastTrainData;
+} eastTrainData;
 
 //WestTraindata
-typedef struct{
+typedef struct {
   bool* west;
   bool* gridlock;
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
-} WestTrainData;
+} westTrainData;
 
 //Scheduledata
-typedef struct{
+typedef struct {
   unsigned int* globalCount;
-} ScheduleData;
+} scheduleData;
 
 //TCB
-typedef struct{
+typedef struct {
   void* d;
   void (*f)(void*);
 } TCB;
 
-void TrainCom(void* data);
-void SwitchControl(void* data);
-void NorthTrain(void* data);
-void WestTrain(void* data);
-void EastTrain(void* data);
-void Schedule(void* data);
-void TrainInit(TrainComData* TCdata, SwitchControlData* SCdata, NorthTrainData* NTdata, 
-                EastTrainData* ETdata, WestTrainData* WTdata, ScheduleData* Sdata, 
-                bool* north, bool* east, bool* west, bool* gridlock, bool* trainPresent, 
-                unsigned int* trainSize, unsigned int* globalCount);
+//Function prototypes
+void TrainCom (void* data);
+void SwitchControl (void* data);
+void NorthTrain (void* data);
+void WestTrain (void* data);
+void EastTrain (void* data);
+void Schedule (void* data);
+void TrainInit (trainComData* tcd,   switchControlData* scd, northTrainData* ntd, 
+                eastTrainData* etd,  westTrainData* wtd,     scheduleData* sd, 
+                bool* north,         bool* east,             bool* west, 
+                bool* gridlock,      bool* trainPresent,     unsigned int* trainSize, 
+                unsigned int* globalCount);
 
-//#endif
+#endif
