@@ -1,26 +1,34 @@
 
 #include "functions.h"
 
+
+
 void TrainCom(void* d) {
-    trainComData* tcd = (trainComData*) d;
-//  
-// rand = RandomInt(0, 2);
-// if (rand == 0)
-// {
-//   west = true;
-// }
-// else if (rand == 1)
-// {
-//   north = true;
-// }
-// else 
-// {
-//   east = true;
-// }
-// 
-// rand2 = RandomInt(2, 9);
-// trainSize = rand2;
-//  
+  trainComData* tcd = (trainComData*) d;
+  bool* north = tcd->north;
+  bool* east = tcd->east;
+  bool* west = tcd->west;
+  unsigned int* trainSize = tcd->trainSize;
+  unsigned int* globalCount = tcd->globalCount;
+  
+  // create a random value between 0 and 2. set a direction TRUE depending on the generated value
+  int rand = RandomInt(0, 2);
+  if (rand == 0) 
+  {
+    *west = TRUE;
+  }
+  else if (rand == 1)
+  {
+    *north = TRUE;
+  }
+  else 
+  {
+    *east = TRUE;
+  }
+  
+  // create a randome value for trainSize between 2 and 9
+  unsigned int rand2 = RandomInt(2, 9);
+  *trainSize = rand2;
 }
   
 
@@ -60,9 +68,6 @@ void SwitchControl(void* d) {
 
 void NorthTrain(void* d) {
     northTrainData* ntd = (northTrainData*) d;
-    if () {
-        //dothings
-    }
 //  
 //    if (North && )
 }
@@ -82,14 +87,25 @@ void WestTrain(void* d) {
 
 void Schedule(void* d) {
     scheduleData* sd = (scheduleData*) d;
-//  globalCount = globalCount + 1;
-//  //display globalCount: use /,% to get necessary numbers to display
-//  //delay ***ms
-//  
+    unsigned int* g = sd->globalCount;
+    g = g + 1; //globalCount = globalCount + 1;
+  //display globalCount: use /,% to get necessary numbers to display
+    char a[7] = "";
+    unsigned int global = *g;
+    for (int i = 0; i <7; i++) {
+      a[7-i] = global % 10;
+      global = global / 10;
+    }
+   
+    
+    for (int i = 0; i < 10000; i++){
+      //delay 
+    }
+     
 }
 
 // Initialize the task data to point to global state variables
-void TrainInit(trainComData* tcd, switchControlData* scd, northTrainData* ntd, 
+void TrainInit(trainComData* tcd, switchControlData* scd, northTrainData* ntd,  
                 eastTrainData* etd, westTrainData* wtd, scheduleData* sd, 
                 bool* north, bool* east, bool* west, bool* gridlock, bool* trainPresent, 
                 unsigned int* trainSize, unsigned int* globalCount) {
@@ -158,9 +174,12 @@ int RandomInt(int low, int high) { //code for RandomInt taken from EE472 website
       randNum = randNum + max;
     }
     
-    randNum = randNum/max;
+    // Fault ISR triggered in following line, currently commented out
     
-    retVal =  ((int)((high-low+1)*randNum))+low;
+    
+    //randNum = randNum/max;
+    
+    //retVal =  ((int)((high-low+1)*randNum))+low;
   }
   
   return retVal;
