@@ -44,15 +44,27 @@ int main()
   switchControlTCB.d = (void*)&scd;
   task[1] = &switchControlTCB;
   
+    //Setting up northTrain light and sound arrays
+    ntd.light = {1, 1, 1, 0, 0, 0};
+    ntd.sound = {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
+    
   TCB northTrainTCB;
   northTrainTCB.f = &NorthTrain;
   northTrainTCB.d = (void*)&ntd;
   task[2] = &northTrainTCB;
+    
+    //Setting up eastTrain light and sound arrays
+    etd.light = {1, 1, 1, 1, 0, 0, 0, 0,};
+    etd.sound = {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
   
   TCB eastTrainTCB;
   eastTrainTCB.f = &EastTrain;
   eastTrainTCB.d = (void*)&etd;
   task[3] = &eastTrainTCB;
+    
+    //Setting up westTrain light and sound arrays
+    wtd.light = {1, 1, 0, 0};
+    wtd.sound = {1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
   
   TCB westTrainTCB;
   westTrainTCB.f = &WestTrain;
@@ -64,6 +76,10 @@ int main()
   scheduleTCB.d = (void*)&sd;
   task[5] = &scheduleTCB;
   
+    
+    //initialize OLED display
+    RIT128x96x4Init(1000000);
+    
   // Loop the task control block
   int i;
   while(1) {  

@@ -44,6 +44,9 @@ typedef struct {
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
+    int light [6]; //assuming globalcount++ = 0.5 s
+    int sound [20];
+    int i = 0;//counter variable to count through sound; can I initialize it here?
 } northTrainData;
 
 //EastTraindata
@@ -53,6 +56,9 @@ typedef struct {
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
+    int light [8]; //assuming globalcount++ = 0.5 s
+    int sound [26];
+    int i = 0;//counter variable to count through sound
 } eastTrainData;
 
 //WestTraindata
@@ -62,6 +68,9 @@ typedef struct {
   bool* trainPresent;
   unsigned int* trainSize;
   unsigned int* globalCount;
+    int light [4]; //assuming globalcount++ = 0.5 s
+    int sound [14];
+    int i = 0;//counter variable to count through sound
 } westTrainData;
 
 //Scheduledata

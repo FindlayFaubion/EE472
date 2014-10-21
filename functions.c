@@ -29,7 +29,7 @@ void TrainCom(void* d) {
   // create a randome value for trainSize between 2 and 9
   unsigned int rand2 = RandomInt(2, 9);
   *trainSize = rand2;
-}
+}//Credit for random generator: Alan Ecker
   
 
 void SwitchControl(void* d) {  
@@ -68,20 +68,83 @@ void SwitchControl(void* d) {
 
 void NorthTrain(void* d) {
     northTrainData* ntd = (northTrainData*) d;
-//  
-//    if (North && )
+    if (*ntd.north & *ntd.trainPresent == TRUE) {
+        
+        //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
+        //through the 1's and 0's making the display flash
+        if (ntd.light[globalCount % 6]){ //Do something about magic number 6
+            string display = "NorthTrain %d", ntd.trainSize; //Not sure if this works
+            RIT128x96x4StringDraw(display, 30, 24, 15);
+        }else{
+            RIT128x96x4Clear();
+        }
+        
+        if (i < 20 & ntd.sound[i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+            //Turn beeper on
+        }else{
+            //turn beeper off
+        }
+        
+        ntd.i++
+        
+    }else{
+        ntd.i = 0; //reseting i to repeat pattern correctly on next train
+    }
 }
    
 
 void EastTrain(void* d) {
     eastTrainData* etd = (eastTrainData*) d;
-//  
+    if (*etd.east & *netd.trainPresent == TRUE) {
+        
+        //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
+        //through the 1's and 0's making the display flash
+        if (etd.light[globalCount % 8]){ //Do something about magic number 6
+            string display = "EastTrain %d", ntd.trainSize; //Not sure if this works
+            RIT128x96x4StringDraw(display, 30, 24, 15);
+        }else{
+            RIT128x96x4Clear();
+        }
+        
+        if (i < 26 & etd.sound[i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+            //Turn beeper on
+        }else{
+            //turn beeper off
+        }
+        
+        etd.i++
+        
+    }else{
+        etd.i = 0; //reseting i to repeat pattern correctly on next train
+    }
 }
 
 
 void WestTrain(void* d) {
     westTrainData* wtd = (westTrainData*) d;
-//  
+    if (*wtd.west & *wtd.trainPresent == TRUE) {
+        
+        //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
+        //through the 1's and 0's making the display flash
+        if (wtd.light[globalCount % 4]){ //Do something about magic number 6
+            string display = "WestTrain %d", ntd.trainSize; //Not sure if this works
+            RIT128x96x4StringDraw(display, 30, 24, 15);
+        }else{
+            RIT128x96x4Clear();
+        }
+        
+        if (i < 20 & wtd.sound[i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+            //Turn beeper on
+        }else{
+            //turn beeper off
+        }
+        
+        wtd.i++
+        
+    }else{
+        wtd.i = 0; //reseting i to repeat pattern correctly on next train
+    }
+}
 }
 
 
