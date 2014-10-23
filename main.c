@@ -6,7 +6,7 @@
 void __error__(char *pcFilename, unsigned long ulLine){}
 #endif
 
-// Global state variables
+// Initialize globals
 bool north = FALSE;
 bool east = FALSE;
 bool west = FALSE;
@@ -14,77 +14,87 @@ bool gridlock = FALSE;
 bool trainPresent = FALSE;
 unsigned int trainSize = 0;
 unsigned int globalCount = 0;
-
-// Global task data
-trainComData tcd;
-switchControlData scd;
+int seed = 1;
 northTrainData ntd;
 eastTrainData etd;
 westTrainData wtd;
-scheduleData sd;
 
 int main()
 {
   
-  //Initialize task data to point to global state variables
-  TrainInit(&tcd, &scd, &ntd, &etd, &wtd, &sd, &north, &east, &west, &gridlock, &trainPresent, 
-            &trainSize, &globalCount);
-  
-
+  // Initialize system clock
+  //SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
   //Initialize the train control block 
-  TCB* task[6];
+  test_struct testarray[6];
+  std_tcb taskArray[6];
   
-  TCB trainComTCB;
-  trainComTCB.f = &TrainCom;
-  trainComTCB.d = (void*)&tcd;
-  task[0] = &trainComTCB;
+  testarray[0].x = &TrainCom;
+  testarray[0].y = (void*) &seed;
   
-  TCB switchControlTCB;
-  switchControlTCB.f = &SwitchControl;
-  switchControlTCB.d = (void*)&scd;
-  task[1] = &switchControlTCB;
+  testarray[1].x = &NorthTrain;
+  // Train com
+  taskArray[0].x = TrainCom;
+  taskArray[0].y = (void*) &ntd;
   
-    //Setting up northTrain light and sound arrays
-    ntd.light = {1, 1, 1, 0, 0, 0};
-    ntd.sound = {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
-    
-  TCB northTrainTCB;
-  northTrainTCB.f = &NorthTrain;
-  northTrainTCB.d = (void*)&ntd;
-  task[2] = &northTrainTCB;
-    
-    //Setting up eastTrain light and sound arrays
-    etd.light = {1, 1, 1, 1, 0, 0, 0, 0,};
-    etd.sound = {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
+  // Switch control
+  taskArray[1].x = SwitchControl;
+  taskArray[1].y = (void*) &ntd;
   
-  TCB eastTrainTCB;
-  eastTrainTCB.f = &EastTrain;
-  eastTrainTCB.d = (void*)&etd;
-  task[3] = &eastTrainTCB;
-    
-    //Setting up westTrain light and sound arrays
-    wtd.light = {1, 1, 0, 0};
-    wtd.sound = {1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0};
+  //Setting up northTrain light and sound arrays
+  unsigned char NTLight [6];
+  unsigned char NTSound [20];
+  SetNTData(NTLight, NTSound); 
+  ntd.light = NTLight;
+  ntd.sound = NTSound;
   
-  TCB westTrainTCB;
-  westTrainTCB.f = &WestTrain;
-  westTrainTCB.d = (void*)&wtd;
-  task[4] = &westTrainTCB;
+  // North train
+  taskArray[2].x = NorthTrain;
+  taskArray[2].y = (void*)&ntd;
   
-  TCB scheduleTCB;
-  scheduleTCB.f = &Schedule;
-  scheduleTCB.d = (void*)&sd;
-  task[5] = &scheduleTCB;
+  //Setting up eastTrain light and sound arrays
+  unsigned char ETLight[8];
+  unsigned char ETSound[26];
+  SetETData(ETLight, ETSound);
+  etd.light = ETLight;
+  etd.sound = ETSound;
   
-    
-    //initialize OLED display
-    RIT128x96x4Init(1000000);
-    
+  // East train
+  taskArray[3].x = EastTrain;
+  taskArray[3].y = (void*)&etd;
+  
+  //Setting up westTrain light and sound arrays
+  unsigned char WTLight[4];
+  unsigned char WTSound[14];
+  SetWTData(WTLight, WTSound);
+  wtd.light = WTLight;
+  wtd.sound = WTSound;
+  
+  // West train
+  taskArray[4].x = WestTrain;
+  taskArray[4].y = (void*)&wtd;
+  
+  // Schedule
+  taskArray[5].x = Schedule;
+  taskArray[5].y = (void*) &ntd;
+  
+  
+  
+  //initialize OLED display
+  RIT128x96x4Init(1000000);
+  
+  RIT128x96x4StringDraw("test", 30, 24, 15);
+
+
+
+
+
+
   // Loop the task control block
   int i;
   while(1) {  
     for(i = 0;i < 6;i++) {
-      (*task[i] -> f)((void*)task[i]->d);
+      (*taskArray[i].x)(taskArray[i].y);
     }
+    i = 0;
   }
 }

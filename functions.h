@@ -15,74 +15,61 @@
 enum myBool { FALSE = 0, TRUE = 1 };
 typedef enum myBool bool;
 
-//TrainCom data
-typedef struct {
-  bool* north;
-  bool* east;
-  bool* west;
-  bool* gridlock;
-  bool* trainPresent;
-  unsigned int* trainSize;
-  unsigned int* globalCount;
-} trainComData;
+// random seed
+extern int seed;
 
-//SwitchControldata
-typedef struct {
-  bool* north;
-  bool* east;
-  bool* west;
-  bool* gridlock;
-  bool* trainPresent;
-  unsigned int* trainSize;
-  unsigned int* globalCount;
-} switchControlData;
+// Declare global state variables
+extern bool north;
+extern bool east;
+extern bool west;
+extern bool gridlock;
+extern bool trainPresent;
+extern unsigned int trainSize;
+extern unsigned int globalCount;
+
+//Null point
+#define NULL 0
+
+// offset ascii to display numbers
+#define ASCII_OFFSET 48
 
 //NorthTraindata
 typedef struct {
-  bool* north;
-  bool* gridlock;
-  bool* trainPresent;
-  unsigned int* trainSize;
-  unsigned int* globalCount;
-    int light [6]; //assuming globalcount++ = 0.5 s
-    int sound [20];
-    int i = 0;//counter variable to count through sound; can I initialize it here?
+    unsigned char* light; //assuming globalcount++ = 0.5 s
+    unsigned char* sound;
+    int i;//counter variable to count through sound; can I initialize it here?
 } northTrainData;
 
 //EastTraindata
 typedef struct {
-  bool* east;
-  bool* gridlock;
-  bool* trainPresent;
-  unsigned int* trainSize;
-  unsigned int* globalCount;
-    int light [8]; //assuming globalcount++ = 0.5 s
-    int sound [26];
-    int i = 0;//counter variable to count through sound
+    unsigned char* light; //assuming globalcount++ = 0.5 s
+    unsigned char* sound;
+    int i;//counter variable to count through sound
 } eastTrainData;
 
 //WestTraindata
 typedef struct {
-  bool* west;
-  bool* gridlock;
-  bool* trainPresent;
-  unsigned int* trainSize;
-  unsigned int* globalCount;
-    int light [4]; //assuming globalcount++ = 0.5 s
-    int sound [14];
-    int i = 0;//counter variable to count through sound
+    unsigned char* light; //assuming globalcount++ = 0.5 s
+    unsigned char* sound;
+    int i;//counter variable to count through sound
 } westTrainData;
-
-//Scheduledata
-typedef struct {
-  unsigned int* globalCount;
-} scheduleData;
 
 //TCB
 typedef struct {
-  void* d;
-  void (*f)(void*);
-} TCB;
+  void* y;
+  void (*x)(void*);
+} std_tcb;
+
+//test struct
+typedef struct {
+    void (*x)(void*);
+    void* y;
+} test_struct;
+
+// Declare global task data
+extern northTrainData ntd;
+extern eastTrainData etd;
+extern westTrainData wtd;
 
 //Function prototypes
 void TrainCom (void* data);
@@ -91,10 +78,11 @@ void NorthTrain (void* data);
 void WestTrain (void* data);
 void EastTrain (void* data);
 void Schedule (void* data);
-void TrainInit (trainComData* tcd,   switchControlData* scd, northTrainData* ntd, 
-                eastTrainData* etd,  westTrainData* wtd,     scheduleData* sd, 
-                bool* north,         bool* east,             bool* west, 
-                bool* gridlock,      bool* trainPresent,     unsigned int* trainSize, 
-                unsigned int* globalCount);
+
+// helper functions
+int RandomInt(int low, int high);
+void SetNTData(unsigned char*, unsigned char*);
+void SetETData(unsigned char*, unsigned char*);
+void SetWTData(unsigned char*, unsigned char*);
 
 #endif

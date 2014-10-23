@@ -4,224 +4,268 @@
 
 
 void TrainCom(void* d) {
-  trainComData* tcd = (trainComData*) d;
-  bool* north = tcd->north;
-  bool* east = tcd->east;
-  bool* west = tcd->west;
-  unsigned int* trainSize = tcd->trainSize;
-  unsigned int* globalCount = tcd->globalCount;
   
   // create a random value between 0 and 2. set a direction TRUE depending on the generated value
   int rand = RandomInt(0, 2);
   if (rand == 0) 
   {
-    *west = TRUE;
+    west = TRUE;
   }
   else if (rand == 1)
   {
-    *north = TRUE;
+    north = TRUE;
   }
   else 
   {
-    *east = TRUE;
+    east = TRUE;
   }
   
   // create a randome value for trainSize between 2 and 9
-  unsigned int rand2 = RandomInt(2, 9);
-  *trainSize = rand2;
-}//Credit for random generator: Alan Ecker
-  
+  trainSize = RandomInt(2, 9);
+}
+
 
 void SwitchControl(void* d) {  
-    switchControlData* sc = (switchControlData*) d;
-//  if (trainPresent || !gridlockChecked) 
-//  {
-//    gridlockedChecked = true;
-//    //flash alarm
-//  }
-//  
-//  rand = RandomInt(-2, 2);
-//  if (rand < 0)
-//  {
-//    gridlock = true;
-//    trainPresent = false;
-//    //alarm
-//    
-//   
-//    //DELAY for -2*n minutes
-//    //complete routing
-//    gridlock = false;
-//  }
-//  else 
-//  {
-//    traversaltime = 0.1 * trainsize; //conversion needed
-//    //display direction
-//    //after traversaltime 
-//      //north = false;
-//      //west = false;
-//      //east = false;
-//      //trainPresent = false;
-//      //trainSize = 0;
-//  }
+  //  if (trainPresent || !gridlockChecked) 
+  //  {
+  //    gridlockedChecked = true;
+  //    //flash alarm
+  //  }
+  //  
+  //  rand = RandomInt(-2, 2);
+  //  if (rand < 0)
+  //  {
+  //    gridlock = true;
+  //    trainPresent = false;
+  //    //alarm
+  //    
+  //   
+  //    //DELAY for -2*n minutes
+  //    //complete routing
+  //    gridlock = false;
+  //  }
+  //  else 
+  //  {
+  //    traversaltime = 0.1 * trainsize; //conversion needed
+  //    //display direction
+  //    //after traversaltime 
+  //      //north = false;
+  //      //west = false;
+  //      //east = false;
+  //      //trainPresent = false;
+  //      //trainSize = 0;
+  //  }
 }
 
 
 void NorthTrain(void* d) {
-    northTrainData* ntd = (northTrainData*) d;
-    if (*ntd.north & *ntd.trainPresent == TRUE) {
-        
-        //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
-        //through the 1's and 0's making the display flash
-        if (ntd.light[globalCount % 6]){ //Do something about magic number 6
-            string display = "NorthTrain %d", ntd.trainSize; //Not sure if this works
-            RIT128x96x4StringDraw(display, 30, 24, 15);
-        }else{
-            RIT128x96x4Clear();
-        }
-        
-        if (i < 20 & ntd.sound[i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
-            //Turn beeper on
-        }else{
-            //turn beeper off
-        }
-        
-        ntd.i++
-        
+  northTrainData* ntd = (northTrainData*) d;
+  if (north && trainPresent) {
+    
+    //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
+    //through the 1's and 0's making the display flash
+    if (ntd->light[globalCount % 6]){ //Do something about magic number 6
+      char display[32] = "NorthTrain ";
+      display[11] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
+      RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-        ntd.i = 0; //reseting i to repeat pattern correctly on next train
+      RIT128x96x4Clear();
     }
+    
+    if (ntd->i < 20 && ntd->sound[ntd->i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+      //Turn beeper on
+    }else{
+      //turn beeper off
+    }
+    ntd->i++;
+    
+  }else{
+    ntd->i = 0; //reseting i to repeat pattern correctly on next train
+  }
 }
-   
+
 
 void EastTrain(void* d) {
-    eastTrainData* etd = (eastTrainData*) d;
-    if (*etd.east & *netd.trainPresent == TRUE) {
-        
-        //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
-        //through the 1's and 0's making the display flash
-        if (etd.light[globalCount % 8]){ //Do something about magic number 6
-            string display = "EastTrain %d", ntd.trainSize; //Not sure if this works
-            RIT128x96x4StringDraw(display, 30, 24, 15);
-        }else{
-            RIT128x96x4Clear();
-        }
-        
-        if (i < 26 & etd.sound[i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
-            //Turn beeper on
-        }else{
-            //turn beeper off
-        }
-        
-        etd.i++
-        
+  eastTrainData* etd = (eastTrainData*) d;
+  if (east && trainPresent) {
+    
+    //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
+    //through the 1's and 0's making the display flash
+    if (etd->light[globalCount % 8]){ //Do something about magic number 6
+      char display[32] = "EastTrain ";
+      display[10] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
+      RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-        etd.i = 0; //reseting i to repeat pattern correctly on next train
+      RIT128x96x4Clear();
     }
+    
+    if (etd->i < 26 && etd->sound[etd->i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+      //Turn beeper on
+    }else{
+      //turn beeper off
+    }
+    
+    etd->i++;
+    
+  }else{
+    etd->i = 0; //reseting i to repeat pattern correctly on next train
+  }
 }
 
 
 void WestTrain(void* d) {
-    westTrainData* wtd = (westTrainData*) d;
-    if (*wtd.west & *wtd.trainPresent == TRUE) {
-        
-        //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
-        //through the 1's and 0's making the display flash
-        if (wtd.light[globalCount % 4]){ //Do something about magic number 6
-            string display = "WestTrain %d", ntd.trainSize; //Not sure if this works
-            RIT128x96x4StringDraw(display, 30, 24, 15);
-        }else{
-            RIT128x96x4Clear();
-        }
-        
-        if (i < 20 & wtd.sound[i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
-            //Turn beeper on
-        }else{
-            //turn beeper off
-        }
-        
-        wtd.i++
-        
+  westTrainData* wtd = (westTrainData*) d;
+  if (west && trainPresent) {
+    
+    //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
+    //through the 1's and 0's making the display flash
+    if (wtd->light[globalCount % 4]){ //Do something about magic number 6
+      char display[32] = "WestTrain ";
+      display[10] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
+      RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-        wtd.i = 0; //reseting i to repeat pattern correctly on next train
+      RIT128x96x4Clear();
     }
-}
+    
+    if (wtd->i < 20 && wtd->sound[wtd->i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+      //Turn beeper on
+    }else{
+      //turn beeper off
+    }
+    
+    wtd->i++;
+    
+  }else{
+    wtd->i = 0; //reseting i to repeat pattern correctly on next train
+  }
 }
 
 
 void Schedule(void* d) {
-    scheduleData* sd = (scheduleData*) d;
-    unsigned int* g = sd->globalCount;
-    g = g + 1; //globalCount = globalCount + 1;
-  //display globalCount: use /,% to get necessary numbers to display
-    char a[7] = "";
-    unsigned int global = *g;
-    for (int i = 0; i <7; i++) {
-      a[7-i] = global % 10;
-      global = global / 10;
-    }
-   
-    
-    for (int i = 0; i < 10000; i++){
-      //delay 
-    }
-     
+  
+  // Increment global count
+  globalCount++; 
+  //RIT128x96x4Clear();
+  // Extract global count into characters
+  char a[7] = "";
+  int global = globalCount;
+  int i = 5;
+  for (; i >=0 && global!=0 ; i--) {
+    a[i] = global % 10 + ASCII_OFFSET;
+    global = global / 10;
+  }
+  while(i >= 0) {
+    a[i] = ' ';
+    i--;
+  }
+  // Display global count
+  RIT128x96x4StringDraw(a, 20, 50, 15);
+  
+  // Delay execution
+  for (int i = 0; i < 10000; i++){
+    //delay 
+  }
+  //RIT128x96x4Clear();
 }
 
-// Initialize the task data to point to global state variables
-void TrainInit(trainComData* tcd, switchControlData* scd, northTrainData* ntd,  
-                eastTrainData* etd, westTrainData* wtd, scheduleData* sd, 
-                bool* north, bool* east, bool* west, bool* gridlock, bool* trainPresent, 
-                unsigned int* trainSize, unsigned int* globalCount) {
-    // train communication
-    tcd->north = north;
-    tcd->west = west;
-    tcd->east = east;
-    tcd->gridlock = gridlock;
-    tcd->trainPresent = trainPresent;
-    tcd->trainSize = trainSize;
-    tcd->globalCount = globalCount;
+void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
   
-    // switch control
-    scd->north = north;
-    scd->west = west;
-    scd->east = east;
-    scd->gridlock = gridlock;
-    scd->trainPresent = trainPresent;
-    scd->trainSize = trainSize;
-    scd->globalCount = globalCount;
+  NTLight[0] = 1;
+  NTLight[1] = 1;
+  NTLight[2] = 1;
+  NTLight[3] = 0;
+  NTLight[4] = 0;
+  NTLight[5] = 0;
   
-    // north data
-    ntd->north = north;
-    ntd->gridlock = gridlock;
-    ntd->trainPresent = trainPresent;
-    ntd->trainSize = trainSize;
-    ntd->globalCount = globalCount;
-    
-    // east data 
-    etd->east = east;
-    etd->gridlock = gridlock;
-    etd->trainPresent = trainPresent;
-    etd->trainSize = trainSize;
-    etd->globalCount = globalCount;
-    
-    // west data
-    wtd->west = west;
-    wtd->gridlock = gridlock;
-    wtd->trainPresent = trainPresent; 
-    wtd->trainSize = trainSize;
-    wtd->globalCount = globalCount;
-    
-    // schedule data 
-    sd->globalCount = globalCount;
+  NTSound[0] = 1;
+  NTSound[1] = 1;
+  NTSound[2] = 1;
+  NTSound[3] = 1;
+  NTSound[4] = 0;
+  NTSound[5] = 0;
+  NTSound[6] = 1;
+  NTSound[7] = 1;
+  NTSound[8] = 1;
+  NTSound[9] = 1;
+  NTSound[10] = 0;
+  NTSound[11] = 0;
+  NTSound[12] = 1;
+  NTSound[13] = 1;
+  NTSound[14] = 0;
+  NTSound[15] = 0;
+  NTSound[16] = 1;
+  NTSound[17] = 1;
+  NTSound[18] = 0;
+  NTSound[19] = 0;
+}
+
+void SetETData(unsigned char* ETLight, unsigned char* ETSound) {
+  ETLight[0] = 1;
+  ETLight[1] = 1;
+  ETLight[2] = 1;
+  ETLight[3] = 1;
+  ETLight[4] = 0;
+  ETLight[5] = 0;
+  ETLight[6] = 0;
+  ETLight[7] = 0;
+  
+  ETSound[0] = 1;
+  ETSound[1] = 1;
+  ETSound[2] = 1;
+  ETSound[3] = 1;
+  ETSound[4] = 0;
+  ETSound[5] = 0;
+  ETSound[6] = 1;
+  ETSound[7] = 1;
+  ETSound[8] = 1;
+  ETSound[9] = 1;
+  ETSound[10] = 0;
+  ETSound[11] = 0;
+  ETSound[12] = 1;
+  ETSound[13] = 1;
+  ETSound[14] = 1;
+  ETSound[15] = 1;
+  ETSound[16] = 0;
+  ETSound[17] = 0;
+  ETSound[18] = 1;
+  ETSound[19] = 1;
+  ETSound[20] = 0;
+  ETSound[21] = 0;
+  ETSound[22] = 1;
+  ETSound[23] = 1;
+  ETSound[24] = 0;
+  ETSound[25] = 0;
+}
+
+void SetWTData(unsigned char* WTLight, unsigned char* WTSound) {
+  WTLight[0] = 1;
+  WTLight[1] = 1;
+  WTLight[2] = 0;
+  WTLight[3] = 0;
+  
+  WTSound[0] = 1;
+  WTSound[1] = 1;
+  WTSound[2] = 1;
+  WTSound[3] = 1;
+  WTSound[4] = 0;
+  WTSound[5] = 0;
+  WTSound[6] = 1;
+  WTSound[7] = 1;
+  WTSound[8] = 0;
+  WTSound[9] = 0;
+  WTSound[10] = 1;
+  WTSound[11] = 1;
+  WTSound[12] = 0;
+  WTSound[13] = 0;
 }
 
 // Generate a random number between the given bounds
-int RandomInt(int low, int high) { //code for RandomInt taken from EE472 website
+// code for RandomInt taken from EE472 website
+int RandomInt(int low, int high) { 
   double randNum = 0.0;
   int multiplier = 2743;
   int addOn = 5923;
-  int seed = 1;
-  double max = 0xFFFF-1;
+  double max = 0xFFF-1;
   
   int retVal = 0;
   
@@ -235,17 +279,11 @@ int RandomInt(int low, int high) { //code for RandomInt taken from EE472 website
     if (randNum <0)
     {
       randNum = randNum + max;
-    }
+    }    
+    randNum = randNum/max;
     
-    // Fault ISR triggered in following line, currently commented out
-    
-    
-    //randNum = randNum/max;
-    
-    //retVal =  ((int)((high-low+1)*randNum))+low;
+    retVal =  ((int)((high-low+1)*randNum))+low;
   }
   
   return retVal;
 }
-
-        
