@@ -1,4 +1,9 @@
 
+#include "stdbool.h"
+#include "inc/hw_types.h"
+#include "driverlib/debug.h"
+#include "driverlib/sysctl.h"
+#include "drivers/rit128x96x4.h"
 #include "functions.h"
 
 // The error routine that is called if the driver library encounters an error.
@@ -6,12 +11,12 @@
 void __error__(char *pcFilename, unsigned long ulLine){}
 #endif
 
-// Initialize globals
-bool north = FALSE;
-bool east = FALSE;
-bool west = FALSE;
-bool gridlock = FALSE;
-bool trainPresent = FALSE;
+//Initialize globals
+bool north = false;
+bool east = false;
+bool west = false;
+bool gridlock = false;
+bool trainPresent = false;
 unsigned int trainSize = 0;
 unsigned int globalCount = 0;
 int seed = 1;
@@ -21,7 +26,6 @@ westTrainData wtd;
 
 int main()
 {
-  
   // Initialize system clock
   //SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
   //Initialize the train control block 
@@ -81,14 +85,13 @@ int main()
   
   //initialize OLED display
   RIT128x96x4Init(1000000);
-  
-  RIT128x96x4StringDraw("test", 30, 24, 15);
+  RIT128x96x4StringDraw("test \0", 30, 24, 15);
 
 
 
 
 
-
+globalCount = 0;
   // Loop the task control block
   int i;
   while(1) {  

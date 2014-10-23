@@ -1,10 +1,9 @@
-#ifndef HEADER_F 
-#define HEADER_F
 
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
 #include "driverlib/sysctl.h"
 #include "drivers/rit128x96x4.h"
+#include "stdbool.h"
 
 //Include hardware memory map, GPIO driver, and PWM driver
 #include "inc/hw_memmap.h"
@@ -12,13 +11,14 @@
 #include "driverlib/pwm.h"
 
 //Define boolean type 
-enum myBool { FALSE = 0, TRUE = 1 };
-typedef enum myBool bool;
+// enum myBool { FALSE = 0, TRUE = 1 };
+// typedef enum myBool bool;
 
 // random seed
 extern int seed;
 
 // Declare global state variables
+
 extern bool north;
 extern bool east;
 extern bool west;
@@ -26,6 +26,17 @@ extern bool gridlock;
 extern bool trainPresent;
 extern unsigned int trainSize;
 extern unsigned int globalCount;
+
+/*
+bool north = false;
+bool east  = false;
+bool west  = false;
+bool gridlock = false;
+bool trainPresent = false;
+unsigned int trainSize = 0;
+unsigned int globalCount = 0;
+*/
+
 
 //Null point
 #define NULL 0
@@ -67,9 +78,15 @@ typedef struct {
 } test_struct;
 
 // Declare global task data
+
 extern northTrainData ntd;
 extern eastTrainData etd;
 extern westTrainData wtd;
+/*
+northTrainData ntd;
+eastTrainData etd;
+westTrainData wtd;
+*/
 
 //Function prototypes
 void TrainCom (void* data);
@@ -84,5 +101,3 @@ int RandomInt(int low, int high);
 void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
-
-#endif
