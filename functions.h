@@ -5,14 +5,10 @@
 #include "drivers/rit128x96x4.h"
 #include "stdbool.h"
 
-//Include hardware memory map, GPIO driver, and PWM driver
+// hardware memory map, GPIO driver, and PWM driver
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
-
-//Define boolean type 
-// enum myBool { FALSE = 0, TRUE = 1 };
-// typedef enum myBool bool;
 
 // random seed
 extern int seed;
@@ -25,18 +21,20 @@ extern bool gridlock;
 extern bool trainPresent;
 extern unsigned int trainSize;
 extern unsigned int globalCount;
+extern bool gridlockChecked;
 
-// null pointer
-#define NULL 0
 
-// offset ascii to display numbers
-#define ASCII_OFFSET 48
+//#define NULL 0 // null pointer
+#define ASCII_OFFSET 48 // offset ascii to display numbers
+#define TRAIN_SIZE_MIN 2  // min train size
+#define TRAIN_SIZE_MAX 9  // max train size
+#define GLOBAL_CNT_PER_MIN 120 // global counts per minute
 
 //NorthTraindata
 typedef struct {
     unsigned char* light; //assuming globalcount++ = 0.5 s
     unsigned char* sound;
-    int i;//counter variable to count through sound; can I initialize it here?
+    int i;
 } northTrainData;
 
 //EastTraindata
@@ -52,6 +50,14 @@ typedef struct {
     unsigned char* sound;
     int i;//counter variable to count through sound
 } westTrainData;
+
+//switchControlData
+typedef struct {
+    unsigned char* light; //assuming globalcount++ = 0.5 s
+    unsigned int i;//counter variable to count through sound
+    unsigned int delay;
+    bool gridlockChecked;
+} switchControlData;
 
 //TCB
 typedef struct {
@@ -69,6 +75,7 @@ typedef struct {
 extern northTrainData ntd;
 extern eastTrainData etd;
 extern westTrainData wtd;
+extern switchControlData scd;
 
 //Function prototypes
 void TrainCom (void* data);
@@ -80,6 +87,8 @@ void Schedule (void* data);
 
 // helper functions
 int RandomInt(int low, int high);
+char* GetDirection();
 void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
+void SetSCData(unsigned char*);

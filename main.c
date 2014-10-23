@@ -24,6 +24,7 @@ int seed = 1;
 northTrainData ntd;
 eastTrainData etd;
 westTrainData wtd;
+switchControlData scd;
 
 int main()
 {
@@ -38,39 +39,29 @@ int main()
   taskArray[0].y = (void*) &ntd;
   
   // Switch control
+  unsigned char SCLight [2];
+  SetSCData(SCLight);
   taskArray[1].x = SwitchControl;
-  taskArray[1].y = (void*) &ntd;
-  
-  //Setting up northTrain light and sound arrays
+  taskArray[1].y = (void*) &scd;
+    
+    // North train
   unsigned char NTLight [6];
   unsigned char NTSound [20];
   SetNTData(NTLight, NTSound); 
-  ntd.light = NTLight;
-  ntd.sound = NTSound;
-  
-  // North train
   taskArray[2].x = NorthTrain;
   taskArray[2].y = (void*)&ntd;
   
-  //Setting up eastTrain light and sound arrays
+    // East train
   unsigned char ETLight[8];
   unsigned char ETSound[26];
   SetETData(ETLight, ETSound);
-  etd.light = ETLight;
-  etd.sound = ETSound;
-  
-  // East train
   taskArray[3].x = EastTrain;  
   taskArray[3].y = (void*)&etd;
   
-  //Setting up westTrain light and sound arrays
+  // West train
   unsigned char WTLight[4];
   unsigned char WTSound[14];
   SetWTData(WTLight, WTSound);
-  wtd.light = WTLight;
-  wtd.sound = WTSound;
-  
-  // West train
   taskArray[4].x = WestTrain;
   taskArray[4].y = (void*)&wtd;
   
@@ -80,9 +71,7 @@ int main()
   
   //initialize OLED display
   RIT128x96x4Init(1000000);
-  RIT128x96x4StringDraw("test \0", 30, 24, 15);
 
-globalCount = 0;
   // Loop the task control block
   int i;
   while(1) {  
