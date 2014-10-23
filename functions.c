@@ -33,7 +33,8 @@ void TrainCom(void* d) {
 }
 
 // Handles the routing of trains
-void SwitchControl(void* d) {  
+void SwitchControl(void* d) { 
+    
     switchControlData* scd = (switchControlData*) d;
     if (trainPresent || !(scd->gridlockChecked)) {
 
@@ -90,6 +91,7 @@ void SwitchControl(void* d) {
 
 
 void NorthTrain(void* d) {
+
   northTrainData* ntd = (northTrainData*) d;
   if (north && trainPresent) {
     if (ntd->light[globalCount % 6]){ 
@@ -165,6 +167,9 @@ void WestTrain(void* d) {
 
 
 void Schedule(void* d) {
+    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0xFF);
+
+    // GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_59, 0xF8);
    scheduleData* sd = (scheduleData*) d;
   // Increment global count
   globalCount++; 
@@ -186,7 +191,7 @@ void Schedule(void* d) {
   RIT128x96x4StringDraw(a, 20, 50, 15);
   
   // Delay execution
-  SysCtlDelay(sd->clock_f / 400);
+  SysCtlDelay(sd->clock_f / 6);
 }
 
 void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {

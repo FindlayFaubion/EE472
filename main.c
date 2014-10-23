@@ -29,7 +29,7 @@ scheduleData sd;
 int main()
 {
 
-      unsigned long ulPeriod;
+     unsigned long ulPeriod;
 
     // Set the clocking to run directly from the crystal
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
@@ -40,8 +40,7 @@ int main()
     // Initialize PWM buzzer
     InitBuzzer(144);
 
-    // LED stuff
-   // SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    
     
   
     
@@ -84,11 +83,16 @@ int main()
   taskArray[5].x = Schedule;
   taskArray[5].y = (void*) &sd;
   
+  //GPIO writing
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+  GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
+
   // Loop the task control block
   int i;
   while(1) {  
     for(i = 0;i < 6;i++) {
       (*taskArray[i].x)(taskArray[i].y);
+      GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0x00);
     }
     i = 0;
   }

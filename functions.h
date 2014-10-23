@@ -7,6 +7,7 @@
 
 // hardware memory map, GPIO driver, and PWM driver
 #include "inc/hw_memmap.h"
+#include "driverlib/pin_map.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 
