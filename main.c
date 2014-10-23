@@ -31,52 +31,20 @@ int main()
 
       unsigned long ulPeriod;
 
-    // Set the clocking to run directly from the crystal.
+    // Set the clocking to run directly from the crystal
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
 
-    // Activate the display and display "PWM DEMO"
+    // Initialize the OLED
     RIT128x96x4Init(1000000);
-   /*
-    //Set PWM Divide Ratio to 1
-    SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
-
-    //Set Device: PWM0 Enabled
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
    
-    //Set GPIO Port: G Enabled
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOG);
-   
-    //Tell Port G, Pin 1, to take input from PWM 0
-    GPIOPinTypePWM(GPIO_PORTG_BASE, GPIO_PIN_1);
-   
-    //Set a 440 Hz frequency as u1Period
-    ulPeriod = SysCtlClockGet() / 100;
-   
-    //Configure PWM0 in up-down count mode, no sync to clock
-    PWMGenConfigure(PWM0_BASE, PWM_GEN_0,
-                    PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
+    // Initialize PWM buzzer
+    InitBuzzer(144);
 
-    //Set u1Period (440 Hz) as the period of PWM0
-    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
-
-    //Set PWM0, output 1 to a duty cycle of 1/8
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod / 16);
-
-    //Activate PWM0
-    PWMGenEnable(PWM0_BASE, PWM_GEN_0);   
-    int d;
-    while(1)
-    {
-      PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
-      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-      for(d=100000; d>0; d--);
-      PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod*2);
-     for(d=100000; d>0; d--);
-      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-      for(d=100000; d>0; d--);
-     for(d=100000; d>0; d--);
-    }
- */
+    // LED stuff
+   // SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    
+  
+    
   //Initialize the train control block 
   std_tcb taskArray[6];
 

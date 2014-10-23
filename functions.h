@@ -84,7 +84,7 @@ extern westTrainData wtd;
 extern switchControlData scd;
 extern scheduleData sd;
 
-//Function prototypes
+// Train control 
 void TrainCom (void* data);
 void SwitchControl (void* data);
 void NorthTrain (void* data);
@@ -92,7 +92,10 @@ void WestTrain (void* data);
 void EastTrain (void* data);
 void Schedule (void* data);
 
-// helper functions
+// Hardware related
+void InitBuzzer(int freq);
+
+// Mischelper functions
 int RandomInt(int low, int high);
 char* GetDirection();
 void SetNTData(unsigned char*, unsigned char*);

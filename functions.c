@@ -101,9 +101,9 @@ void NorthTrain(void* d) {
     }
     
     if (ntd->i < 20 && ntd->sound[ntd->i]) { 
-      //Turn beeper on
+        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
     }else{
-      //turn beeper off
+        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
     }
     ntd->i++;
     
@@ -125,9 +125,9 @@ void EastTrain(void* d) {
     }
     
     if (etd->i < 26 && etd->sound[etd->i]) { 
-      //Turn beeper on
+      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
     }else{
-      //turn beeper off
+      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
     }
     
     etd->i++;
@@ -151,9 +151,9 @@ void WestTrain(void* d) {
     }
     
     if (wtd->i < 20 && wtd->sound[wtd->i]) { 
-      //Turn beeper on
+      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
     }else{
-      //turn beeper off
+      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
     }
     
     wtd->i++;
@@ -186,7 +186,7 @@ void Schedule(void* d) {
   RIT128x96x4StringDraw(a, 20, 50, 15);
   
   // Delay execution
-  SysCtlDelay(sd->clock_f / 2);
+  SysCtlDelay(sd->clock_f / 400);
 }
 
 void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
@@ -332,3 +332,42 @@ char* GetDirection() {
         return "North       \0";
     }
 }
+
+// Initialize the PWM buzzer on GPIOG
+void InitBuzzer(int freq) {
+    int ulPeriod = SysCtlClockGet() / freq; //Set the pulse period
+    //Set PWM Divide Ratio to 1
+    SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
+    //Set Device: PWM0 Enabled
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
+    //Set GPIO Port: G Enabled
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOG);
+    //Tell Port G, Pin 1, to take input from PWM 0
+    GPIOPinTypePWM(GPIO_PORTG_BASE, GPIO_PIN_1);
+    //Configure PWM0 in up-down count mode, no sync to clock
+    PWMGenConfigure(PWM0_BASE, PWM_GEN_0,
+        PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
+    //Set PWM period
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
+    //Set PWM0, output 1 to a duty cycle of 1/8
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod / 16);
+    //Activate PWM0
+    PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+}
+/*
+// Turn the buzzer on for the given period and duty cycle
+void BuzzerSound(int freq, double duty_cycle) {
+    
+    //Set PWM0, output 1 to a duty cycle of 1/8
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod / 16);
+    //Activate PWM0
+    PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+    // Write to PWM
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
+    for(d=100000; d>0; d--);
+    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
+    for(d=100000; d>0; d--);
+    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
+}
+*/
+
