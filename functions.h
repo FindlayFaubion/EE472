@@ -18,7 +18,6 @@
 extern int seed;
 
 // Declare global state variables
-
 extern bool north;
 extern bool east;
 extern bool west;
@@ -27,18 +26,7 @@ extern bool trainPresent;
 extern unsigned int trainSize;
 extern unsigned int globalCount;
 
-/*
-bool north = false;
-bool east  = false;
-bool west  = false;
-bool gridlock = false;
-bool trainPresent = false;
-unsigned int trainSize = 0;
-unsigned int globalCount = 0;
-*/
-
-
-//Null point
+// null pointer
 #define NULL 0
 
 // offset ascii to display numbers
@@ -78,15 +66,9 @@ typedef struct {
 } test_struct;
 
 // Declare global task data
-
 extern northTrainData ntd;
 extern eastTrainData etd;
 extern westTrainData wtd;
-/*
-northTrainData ntd;
-eastTrainData etd;
-westTrainData wtd;
-*/
 
 //Function prototypes
 void TrainCom (void* data);

@@ -5,9 +5,10 @@
 #include "drivers/rit128x96x4.h"
 #include "stdbool.h"
 #include "functions.h"
+#include <math.h>
 
+// Sets the train direction, and train size
 void TrainCom(void* d) {
-  
   // generate a random direction
   int dir = RandomInt(0, 2);
   if (dir == 0) 
@@ -22,12 +23,11 @@ void TrainCom(void* d) {
   {
     east = true;
   }
-  
   // create a random value for trainSize between 2 and 9
   trainSize = RandomInt(2, 9);
 }
 
-
+// 
 void SwitchControl(void* d) {  
   //  if (trainPresent || !gridlockChecked) 
   //  {
@@ -68,11 +68,11 @@ void NorthTrain(void* d) {
     //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
     //through the 1's and 0's making the display flash
     if (ntd->light[globalCount % 6]){ //Do something about magic number 6
-      char display[32] = "NorthTrain \0";
-      //display[11] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
-     // RIT128x96x4StringDraw(display, 30, 24, 15);
+        char display[32] = "NorthTrain   \0";
+        display[11] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
+        RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-     // RIT128x96x4Clear();
+        RIT128x96x4Clear();
     }
     
     if (ntd->i < 20 && ntd->sound[ntd->i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
@@ -149,10 +149,10 @@ void Schedule(void* d) {
   globalCount++; 
   //RIT128x96x4Clear();
   // Extract global count into characters
-  char a[7] = "";
+  char a[8] = "      \0";
   int global = globalCount;
   int i = 5;
-  for (; i >=0 && global!=0 ; i--) {
+  for (; i >=0 && global != 0; i--) {
     a[i] = global % 10 + ASCII_OFFSET;
     global = global / 10;
   }
@@ -261,31 +261,22 @@ void SetWTData(unsigned char* WTLight, unsigned char* WTSound) {
   WTSound[13] = 0;
 }
 
-// Generate a random number between the given bounds
+// Generate a pseudo random number between the given bounds
 // code for RandomInt taken from EE472 website
 int RandomInt(int low, int high) { 
-  double randNum;
-  int multiplier = 2743;
-  int addOn = 5923;
-  double max = 0xFFFFFFFE;
-  
-  int retVal = 0;
-  
-  if (low > high)
-    retVal = RandomInt(high, low);
-  else
-  {
-    seed = seed*multiplier + addOn;
-    randNum = seed;
-    
-    if (randNum <0)
-    {
-      randNum = randNum + max;
-    }    
-    randNum = randNum/max;
-    
-    retVal =  ((int)((high-low+1)*randNum))+low;
-  }
-  
-  return retVal;
+    int multiplier = 2743;
+    int addOn = 5923;
+
+    int retVal = 0;
+
+    if (low > high) {
+        retVal = RandomInt(high, low);
+    } else {
+        seed = seed*multiplier + addOn;
+        if (seed < 0) {
+            seed = -1 * seed;
+        }
+    }
+    retVal = seed % (high+1 - low);
+    return retVal; 
 }

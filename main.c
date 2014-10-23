@@ -1,4 +1,5 @@
 
+#include <stdlib.h>
 #include "stdbool.h"
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
@@ -28,14 +29,10 @@ int main()
 {
   // Initialize system clock
   //SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
+
   //Initialize the train control block 
-  test_struct testarray[6];
   std_tcb taskArray[6];
-  
-  testarray[0].x = &TrainCom;
-  testarray[0].y = (void*) &seed;
-  
-  testarray[1].x = &NorthTrain;
+
   // Train com
   taskArray[0].x = TrainCom;
   taskArray[0].y = (void*) &ntd;
@@ -63,7 +60,7 @@ int main()
   etd.sound = ETSound;
   
   // East train
-  taskArray[3].x = EastTrain;
+  taskArray[3].x = EastTrain;  
   taskArray[3].y = (void*)&etd;
   
   //Setting up westTrain light and sound arrays
@@ -81,15 +78,9 @@ int main()
   taskArray[5].x = Schedule;
   taskArray[5].y = (void*) &ntd;
   
-  
-  
   //initialize OLED display
   RIT128x96x4Init(1000000);
   RIT128x96x4StringDraw("test \0", 30, 24, 15);
-
-
-
-
 
 globalCount = 0;
   // Loop the task control block
