@@ -53,15 +53,19 @@ void SwitchControl(void* d) {
     }
     // behavior if gridlocked
     if (gridlock) {
+        RIT128x96x4StringDraw("            \0", 30, 24, 15);
         // issue visual alarm (0.5 sec on, 0.5 off) 
         if (scd->light[globalCount % 2]){ 
             char display[32] = "GRIDLOCK \0";
             RIT128x96x4StringDraw(display, 30, 10, 15);
         }else{
-            RIT128x96x4StringDraw("            \0", 30, 24, 15);
+            RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 10, 15);
         }
         // reset if delay has elapsed
         if (scd->i > scd->delay) {
+            west = false;
+            east = false;   
+            north = false;
             gridlock = false;
             scd->gridlockChecked = false;
             scd->i = 0;
@@ -88,18 +92,15 @@ void SwitchControl(void* d) {
 void NorthTrain(void* d) {
   northTrainData* ntd = (northTrainData*) d;
   if (north && trainPresent) {
-    
-    //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
-    //through the 1's and 0's making the display flash
-    if (ntd->light[globalCount % 6]){ //Do something about magic number 6
+    if (ntd->light[globalCount % 6]){ 
         char display[32] = "NorthTrain   \0";
-        display[11] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
+        display[11] = (char) trainSize + ASCII_OFFSET;
         RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-        RIT128x96x4StringDraw("            \0", 30, 24, 15);
+        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, 15);
     }
     
-    if (ntd->i < 20 && ntd->sound[ntd->i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+    if (ntd->i < 20 && ntd->sound[ntd->i]) { 
       //Turn beeper on
     }else{
       //turn beeper off
@@ -107,7 +108,7 @@ void NorthTrain(void* d) {
     ntd->i++;
     
   }else{
-    ntd->i = 0; //reseting i to repeat pattern correctly on next train
+    ntd->i = 0; 
   }
 }
 
@@ -115,18 +116,15 @@ void NorthTrain(void* d) {
 void EastTrain(void* d) {
   eastTrainData* etd = (eastTrainData*) d;
   if (east && trainPresent) {
-    
-    //Makes display flash; light is filled with 1 and 0 dictating if the display is on or off.  As global count increments it cycles
-    //through the 1's and 0's making the display flash
-    if (etd->light[globalCount % 8]){ //Do something about magic number 6
-      char display[32] = "EastTrain  \0";
-      display[10] = (char) trainSize + ASCII_OFFSET; //Not sure if this works
+    if (etd->light[globalCount % 8]){ 
+      char display[32] = "EastTrain   \0";
+      display[10] = (char) trainSize + ASCII_OFFSET; 
      RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-      RIT128x96x4StringDraw("            \0", 30, 24, 15);
+      RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, 15);
     }
     
-    if (etd->i < 26 && etd->sound[etd->i]) { //This will throw a null pointer at i = 20 unless i<20 is evaluated first, not sure on syntax
+    if (etd->i < 26 && etd->sound[etd->i]) { 
       //Turn beeper on
     }else{
       //turn beeper off
@@ -135,21 +133,21 @@ void EastTrain(void* d) {
     etd->i++;
     
   }else{
-    etd->i = 0; //reseting i to repeat pattern correctly on next train
+    etd->i = 0; 
   }
 }
 
 // Handle west train behavior
 void WestTrain(void* d) {
   westTrainData* wtd = (westTrainData*) d;
-  static char display[] = "WestTrain    \0";
   if (west && trainPresent) {
     //Makes display flash
     if (wtd->light[globalCount % 4]){ 
+        char display[32] = "WestTrain    \0";
         display[10] = (char) trainSize + ASCII_OFFSET; 
         RIT128x96x4StringDraw(display, 30, 24, 15);
     }else{
-        RIT128x96x4StringDraw("            \0", 30, 24, 15);
+        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, 15);
     }
     
     if (wtd->i < 20 && wtd->sound[wtd->i]) { 
@@ -167,6 +165,7 @@ void WestTrain(void* d) {
 
 
 void Schedule(void* d) {
+   scheduleData* sd = (scheduleData*) d;
   // Increment global count
   globalCount++; 
   //RIT128x96x4Clear();
@@ -182,14 +181,12 @@ void Schedule(void* d) {
     a[i] = ' ';
     i--;
   }
+
   // Display global count
   RIT128x96x4StringDraw(a, 20, 50, 15);
   
   // Delay execution
-  for (int i = 0; i < 500000; i++){
-    //delay 
-  }
-  //RIT128x96x4Clear();
+  SysCtlDelay(sd->clock_f / 2);
 }
 
 void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
@@ -299,6 +296,10 @@ void SetSCData(unsigned char* SCLight) {
     scd.gridlockChecked = false;
     scd.delay = 0;
     scd.i = 0;
+}
+
+void SetSData() {
+    sd.clock_f = SysCtlClockGet();
 }
 
 // Generate a pseudo random number between the given bounds

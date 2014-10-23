@@ -29,6 +29,7 @@ extern bool gridlockChecked;
 #define TRAIN_SIZE_MIN 2  // min train size
 #define TRAIN_SIZE_MAX 9  // max train size
 #define GLOBAL_CNT_PER_MIN 120 // global counts per minute
+#define CLEAR_SCREEN "                \0"
 
 //NorthTraindata
 typedef struct {
@@ -59,6 +60,11 @@ typedef struct {
     bool gridlockChecked;
 } switchControlData;
 
+// schedule data
+typedef struct {
+    int clock_f;
+} scheduleData;
+
 //TCB
 typedef struct {
   void* y;
@@ -76,6 +82,7 @@ extern northTrainData ntd;
 extern eastTrainData etd;
 extern westTrainData wtd;
 extern switchControlData scd;
+extern scheduleData sd;
 
 //Function prototypes
 void TrainCom (void* data);
@@ -92,3 +99,4 @@ void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
 void SetSCData(unsigned char*);
+void SetSData();
