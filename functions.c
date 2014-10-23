@@ -89,7 +89,7 @@ void SwitchControl(void* d) {
     scd->i++;
 }
 
-
+// Handle north train behavior
 void NorthTrain(void* d) {
 
   northTrainData* ntd = (northTrainData*) d;
@@ -114,7 +114,7 @@ void NorthTrain(void* d) {
   }
 }
 
-
+// Handle east train behavior
 void EastTrain(void* d) {
   eastTrainData* etd = (eastTrainData*) d;
   if (east && trainPresent) {
@@ -165,9 +165,9 @@ void WestTrain(void* d) {
   }
 }
 
-
+// Handle timing 
 void Schedule(void* d) {
-    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0xFF);
+    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0xFF); //write GPIO LED0 on for testing
 
     // GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_59, 0xF8);
    scheduleData* sd = (scheduleData*) d;
@@ -191,9 +191,10 @@ void Schedule(void* d) {
   RIT128x96x4StringDraw(a, 20, 50, 15);
   
   // Delay execution
-  SysCtlDelay(sd->clock_f / 6);
+  SysCtlDelay(sd->clock_f / 6); // 6 produces 500 ms delay
 }
 
+// set data for North Train
 void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
   
   NTLight[0] = 1;
@@ -228,6 +229,7 @@ void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
   ntd.sound = NTSound;
 }
 
+// set data for East Train
 void SetETData(unsigned char* ETLight, unsigned char* ETSound) {
   ETLight[0] = 1;
   ETLight[1] = 1;
@@ -269,6 +271,7 @@ void SetETData(unsigned char* ETLight, unsigned char* ETSound) {
   etd.sound = ETSound;
 }
 
+// set data for West Train
 void SetWTData(unsigned char* WTLight, unsigned char* WTSound) {
   WTLight[0] = 1;
   WTLight[1] = 1;
@@ -293,6 +296,7 @@ void SetWTData(unsigned char* WTLight, unsigned char* WTSound) {
   wtd.sound = WTSound;
 }
 
+// set data for Switch Control
 void SetSCData(unsigned char* SCLight) {
     SCLight[0] = 1;
     SCLight[1] = 0;
@@ -303,6 +307,7 @@ void SetSCData(unsigned char* SCLight) {
     scd.i = 0;
 }
 
+// set data for Schedule
 void SetSData() {
     sd.clock_f = SysCtlClockGet();
 }

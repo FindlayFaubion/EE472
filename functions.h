@@ -31,6 +31,7 @@ extern bool gridlockChecked;
 #define TRAIN_SIZE_MAX 9  // max train size
 #define GLOBAL_CNT_PER_MIN 120 // global counts per minute
 #define CLEAR_SCREEN "                \0"
+#define frequency 75 //frequency used by train buzzer
 
 //NorthTraindata
 typedef struct {
