@@ -24,14 +24,23 @@ extern unsigned int trainSize;
 extern unsigned int globalCount;
 extern bool gridlockChecked;
 
-
-//#define NULL 0 // null pointer
+// Define common constants
+#define OLED_FREQ 1000000
 #define ASCII_OFFSET 48 // offset ascii to display numbers
 #define TRAIN_SIZE_MIN 2  // min train size
 #define TRAIN_SIZE_MAX 9  // max train size
 #define GLOBAL_CNT_PER_MIN 120 // global counts per minute
 #define CLEAR_SCREEN "                \0"
-#define frequency 75 //frequency used by train buzzer
+#define FREQUENCY 75 //frequency used by train buzzer
+#define OLED_LEVEL 15 //brightness level for the OLED 
+// global count lengths for the train light and sound
+#define NTLIGHT_LEN 6 
+#define NTSOUND_LEN 20
+#define ETLIGHT_LEN 8
+#define ETSOUND_LEN 26
+#define WTLIGHT_LEN 4
+#define WTSOUND_LEN 14
+
 
 //NorthTraindata
 typedef struct {
@@ -97,7 +106,7 @@ void Schedule (void* data);
 // Hardware related
 void InitBuzzer(int freq);
 
-// Mischelper functions
+// Misc helper functions
 int RandomInt(int low, int high);
 char* GetDirection();
 void SetNTData(unsigned char*, unsigned char*);

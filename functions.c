@@ -54,13 +54,13 @@ void SwitchControl(void* d) {
     }
     // behavior if gridlocked
     if (gridlock) {
-        RIT128x96x4StringDraw("            \0", 30, 24, 15);
+        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
         // issue visual alarm (0.5 sec on, 0.5 off) 
         if (scd->light[globalCount % 2]){ 
             char display[32] = "GRIDLOCK \0";
-            RIT128x96x4StringDraw(display, 30, 10, 15);
+            RIT128x96x4StringDraw(display, 30, 10, OLED_LEVEL);
         }else{
-            RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 10, 15);
+            RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 10, OLED_LEVEL);
         }
         // reset if delay has elapsed
         if (scd->i > scd->delay) {
@@ -74,7 +74,7 @@ void SwitchControl(void* d) {
     // behavior if not gridlocked
     } else {
         // display train direction (always on)
-        RIT128x96x4StringDraw(GetDirection(), 30, 10, 15);
+        RIT128x96x4StringDraw(GetDirection(), 30, 10, OLED_LEVEL);
         // reset if delay has elapsed
         if (scd->i > scd->delay) {
             trainPresent = false;
@@ -94,15 +94,15 @@ void NorthTrain(void* d) {
 
   northTrainData* ntd = (northTrainData*) d;
   if (north && trainPresent) {
-    if (ntd->light[globalCount % 6]){ 
+    if (ntd->light[globalCount % NTLIGHT_LEN]){ 
         char display[32] = "NorthTrain   \0";
         display[11] = (char) trainSize + ASCII_OFFSET;
-        RIT128x96x4StringDraw(display, 30, 24, 15);
+        RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
     }else{
-        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, 15);
+        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
     }
     
-    if (ntd->i < 20 && ntd->sound[ntd->i]) { 
+    if (ntd->i < NTSOUND_LEN && ntd->sound[ntd->i]) { 
         PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
     }else{
         PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
@@ -118,15 +118,15 @@ void NorthTrain(void* d) {
 void EastTrain(void* d) {
   eastTrainData* etd = (eastTrainData*) d;
   if (east && trainPresent) {
-    if (etd->light[globalCount % 8]){ 
+    if (etd->light[globalCount % ETLIGHT_LEN]){ 
       char display[32] = "EastTrain   \0";
       display[10] = (char) trainSize + ASCII_OFFSET; 
-     RIT128x96x4StringDraw(display, 30, 24, 15);
+     RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
     }else{
-      RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, 15);
+      RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
     }
     
-    if (etd->i < 26 && etd->sound[etd->i]) { 
+    if (etd->i < ETSOUND_LEN && etd->sound[etd->i]) { 
       PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
     }else{
       PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
@@ -144,15 +144,15 @@ void WestTrain(void* d) {
   westTrainData* wtd = (westTrainData*) d;
   if (west && trainPresent) {
     //Makes display flash
-    if (wtd->light[globalCount % 4]){ 
+    if (wtd->light[globalCount % WTLIGHT_LEN]){ 
         char display[32] = "WestTrain    \0";
         display[10] = (char) trainSize + ASCII_OFFSET; 
-        RIT128x96x4StringDraw(display, 30, 24, 15);
+        RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
     }else{
-        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, 15);
+        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
     }
     
-    if (wtd->i < 20 && wtd->sound[wtd->i]) { 
+    if (wtd->i < WTSOUND_LEN && wtd->sound[wtd->i]) { 
       PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
     }else{
       PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
@@ -188,7 +188,7 @@ void Schedule(void* d) {
   }
 
   // Display global count
-  RIT128x96x4StringDraw(a, 20, 50, 15);
+  RIT128x96x4StringDraw(a, 20, 50, OLED_LEVEL);
   
   // Delay execution
   SysCtlDelay(sd->clock_f / 6); // 6 produces 500 ms delay
@@ -364,20 +364,6 @@ void InitBuzzer(int freq) {
     //Activate PWM0
     PWMGenEnable(PWM0_BASE, PWM_GEN_0);
 }
-/*
-// Turn the buzzer on for the given period and duty cycle
-void BuzzerSound(int freq, double duty_cycle) {
-    
-    //Set PWM0, output 1 to a duty cycle of 1/8
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_1, ulPeriod / 16);
-    //Activate PWM0
-    PWMGenEnable(PWM0_BASE, PWM_GEN_0);
-    // Write to PWM
-    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
-    for(d=100000; d>0; d--);
-    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-    for(d=100000; d>0; d--);
-    PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-}
-*/
+
+
 
