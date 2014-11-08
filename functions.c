@@ -8,23 +8,115 @@
 #include <math.h>
 
 
+// Handle timing 
+void Schedule(void* d) {
+      GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0xFF); //write GPIO LED0 on for testing
+
+      // GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_59, 0xF8);
+      //scheduleData* sd = (scheduleData*) d;
+      // Increment global count
+      globalCount++; 
+      //RIT128x96x4Clear();
+      // Extract global count into characters
+      char a[8] = "      \0";
+      int global = globalCount;
+      int i = 5;
+      for (; i >=0 && global != 0; i--) {
+        a[i] = global % 10 + ASCII_OFFSET;
+        global = global / 10;
+      }
+      while(i >= 0) {
+        a[i] = ' ';
+        i--;
+      }
+                                                   
+      // Display global count
+      RIT128x96x4StringDraw(a, 20, 50, OLED_LEVEL);
+      
+      // Delay execution
+      SysCtlDelay(SysCtlClockGet() / 6); // 6 produces 500 ms delay
+      
+      // update queue
+      for (int i = 0; i < 5; i++) {
+        (*taskArray[i].x)(taskArray[i].y);
+      }
+}
+
+// Startup function
+void Startup() {
+    // Set the clocking to run directly from the crystal
+    SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
+
+    // Initialize the OLED
+    RIT128x96x4Init(OLED_FREQ);
+
+    // Initialize PWM buzzer
+    InitBuzzer(FREQUENCY);
+    
+    // Initialize task queue
+        // Train com
+    taskArray[0].x = TrainCom;
+    taskArray[0].y = (void*) &ntd; //data not actually used
+
+        // Switch control
+    static unsigned char SCLight [2];
+    SetSCData(SCLight);
+    taskArray[1].x = SwitchControl;
+    taskArray[1].y = (void*) &scd;
+    
+        // Serial comm
+    taskArray[2].x = SerialCom;
+    taskArray[2].y = (void*) &ntd; // data unused
+    
+   // Initialize train data for all directions
+        // North train
+    static unsigned char NTLight [NTLIGHT_LEN]; 
+    static unsigned char NTSound [NTSOUND_LEN]; 
+    SetNTData(NTLight, NTSound); 
+    
+        // South train
+    static unsigned char STLight [STLIGHT_LEN]; 
+    static unsigned char STSound [STSOUND_LEN]; 
+    SetSTData(STLight, STSound); 
+
+        // East train 
+    static unsigned char ETLight[ETLIGHT_LEN];  
+    static unsigned char ETSound[ETSOUND_LEN]; 
+    SetETData(ETLight, ETSound);
+
+        // West train
+    static unsigned char WTLight[WTLIGHT_LEN];  
+    static unsigned char WTSound[WTSOUND_LEN]; 
+    SetWTData(WTLight, WTSound);
+  
+    static tcb* trains[4];
+    trains[0] = &ntd;
+    trains[1] = &etd;
+    trains[2] = &std; 
+    
+
+//    Schedule
+//    SetSData();
+//    taskArray[5].x = Schedule;
+//    taskArray[5].y = (void*) &sd;
+}
+
 // Sets the train direction, and train size
 void TrainCom(void* d) {
   if (!trainPresent && !gridlock) {
       // generate a random direction
-      int dir = RandomInt(0, 2);
-      if (dir == 0) 
-      {
-        west = true;
-      }
-      else if (dir == 1)
-      {
-        north = true;
-      }
-      else 
-      {
-        east = true;
-      }
+      int dir = RandomInt(0, 3);
+      // north 
+      if (dir == 0) {
+       
+      // east 
+      } else if (dir == 1) {
+      
+      // south 
+      } else if(dir == 2) {
+       
+      // west 
+      } else {
       // create a random value for trainSize between 2 and 9
       trainSize = RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
       // update train status
@@ -71,7 +163,7 @@ void SwitchControl(void* d) {
             scd->gridlockChecked = false;
             scd->i = 0;
         }
-    // behavior if not gridlocked
+    // train is present and not gridlocked
     } else {
         // display train direction (always on)
         RIT128x96x4StringDraw(GetDirection(), 30, 10, OLED_LEVEL);
@@ -89,9 +181,28 @@ void SwitchControl(void* d) {
     scd->i++;
 }
 
+// Handle current train behavior
+void CurrentTrain(void* d) {
+    currentTrainData* ctd = (currentTrainData*) d;
+    if (ntd->light[globalCount % ctd.lightlen]){ 
+        char display[32];
+        display[0] = GetDirection();
+        //display[11] = (char) trainSize + ASCII_OFFSET;
+        display[8] = "\0";
+        RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
+    }else{
+        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
+    }
+    
+    if (ctd->i < ctd.soundlen && ctd->sound[ctd->i]) { 
+        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
+    }else{
+        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
+    }
+    ctd->i++;
+}
 // Handle north train behavior
 void NorthTrain(void* d) {
-
   northTrainData* ntd = (northTrainData*) d;
   if (north && trainPresent) {
     if (ntd->light[globalCount % NTLIGHT_LEN]){ 
@@ -139,6 +250,31 @@ void EastTrain(void* d) {
   }
 }
 
+// Handle south train behavior
+void SouthTrain(void* d) {
+  southTrainData* std = (southTrainData*) d;
+  if (south && trainPresent) {
+    if (std->light[globalCount % STLIGHT_LEN]){ 
+      char display[32] = "SouthTrain   \0";
+      display[11] = (char) trainSize + ASCII_OFFSET; 
+     RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
+    }else{
+      RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
+    }
+    
+    if (std->i < STSOUND_LEN && std->sound[std->i]) { 
+      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
+    }else{
+      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
+    }
+    
+    std->i++;
+    
+  }else{
+    std->i = 0; 
+  }
+}
+
 // Handle west train behavior
 void WestTrain(void* d) {
   westTrainData* wtd = (westTrainData*) d;
@@ -165,38 +301,13 @@ void WestTrain(void* d) {
   }
 }
 
-// Handle timing 
-void Schedule(void* d) {
-    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0xFF); //write GPIO LED0 on for testing
-
-    // GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_59, 0xF8);
-   scheduleData* sd = (scheduleData*) d;
-  // Increment global count
-  globalCount++; 
-  //RIT128x96x4Clear();
-  // Extract global count into characters
-  char a[8] = "      \0";
-  int global = globalCount;
-  int i = 5;
-  for (; i >=0 && global != 0; i--) {
-    a[i] = global % 10 + ASCII_OFFSET;
-    global = global / 10;
-  }
-  while(i >= 0) {
-    a[i] = ' ';
-    i--;
-  }
-
-  // Display global count
-  RIT128x96x4StringDraw(a, 20, 50, OLED_LEVEL);
-  
-  // Delay execution
-  SysCtlDelay(sd->clock_f / 6); // 6 produces 500 ms delay
+// Serial communications
+void SerialCom(void* d) {
+    
 }
 
 // set data for North Train
 void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
-  
   NTLight[0] = 1;
   NTLight[1] = 1;
   NTLight[2] = 1;
@@ -267,9 +378,46 @@ void SetETData(unsigned char* ETLight, unsigned char* ETSound) {
   ETSound[24] = 0;
   ETSound[25] = 0;
 
-    etd.light = ETLight;
+  etd.light = ETLight;
   etd.sound = ETSound;
 }
+
+// Set data South train
+void SetSTData(void SetSTData(unsigned char* STLight, unsigned char* STSound) {
+  STLight[0] = 1;
+  STLight[1] = 1;
+  STLight[2] = 0;
+  STLight[3] = 0;
+  
+  STSound[0] = 1;
+  STSound[1] = 1;
+  STSound[2] = 1;
+  STSound[3] = 1;
+  STSound[4] = 0;
+  STSound[5] = 0;
+  STSound[6] = 1;
+  STSound[7] = 1;
+  STSound[8] = 1;
+  STSound[9] = 1;
+  STSound[10] = 0;
+  STSound[11] = 0;
+  STSound[12] = 1;
+  STSound[13] = 1;
+  STSound[14] = 0;
+  STSound[15] = 0;
+  STSound[16] = 1;
+  STSound[17] = 1;
+  STSound[18] = 0;
+  STSound[19] = 0;
+  STSound[20] = 1;
+  STSound[21] = 1;
+  STSound[22] = 0;
+  STSound[23] = 0;
+
+  std.light = STLight;
+  std.sound = STSound;
+}
+
 
 // set data for West Train
 void SetWTData(unsigned char* WTLight, unsigned char* WTSound) {
@@ -308,9 +456,9 @@ void SetSCData(unsigned char* SCLight) {
 }
 
 // set data for Schedule
-void SetSData() {
-    sd.clock_f = SysCtlClockGet();
-}
+//void SetSData() {
+ //   sd.clock_f = SysCtlClockGet();
+//}
 
 // Generate a pseudo random number between the given bounds
 // code for RandomInt taken from EE472 website

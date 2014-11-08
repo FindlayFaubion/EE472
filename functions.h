@@ -18,6 +18,7 @@ extern int seed;
 extern bool north;
 extern bool east;
 extern bool west;
+extern bool south;
 extern bool gridlock;
 extern bool trainPresent;
 extern unsigned int trainSize;
@@ -38,6 +39,8 @@ extern bool gridlockChecked;
 #define NTSOUND_LEN 20
 #define ETLIGHT_LEN 8
 #define ETSOUND_LEN 26
+#define STLIGHT_LEN 4
+#define STSOUND_LEN 24
 #define WTLIGHT_LEN 4
 #define WTSOUND_LEN 14
 
@@ -46,64 +49,80 @@ extern bool gridlockChecked;
 typedef struct {
     unsigned char* light; //assuming globalcount++ = 0.5 s
     unsigned char* sound;
-    int i;
+    int i; //count for delays and sound
 } northTrainData;
 
 //EastTraindata
 typedef struct {
-    unsigned char* light; //assuming globalcount++ = 0.5 s
+    unsigned char* light; 
     unsigned char* sound;
-    int i;//counter variable to count through sound
+    int i;
 } eastTrainData;
+
+//SouthTraindata
+typedef struct {
+    unsigned char* light; 
+    unsigned char* sound;
+    int i;
+} southTrainData;
 
 //WestTraindata
 typedef struct {
-    unsigned char* light; //assuming globalcount++ = 0.5 s
+    unsigned char* light; 
     unsigned char* sound;
-    int i;//counter variable to count through sound
+    int i;
 } westTrainData;
+
+//CurrentTrainData
+typedef struct {
+    unsigned char* light; 
+    unsigned char* sound;
+    int i;
+} currentTrainData;
 
 //switchControlData
 typedef struct {
-    unsigned char* light; //assuming globalcount++ = 0.5 s
-    unsigned int i;//counter variable to count through sound
+    unsigned char* light; 
+    unsigned int i;
     unsigned int delay;
     bool gridlockChecked;
 } switchControlData;
 
 // schedule data
-typedef struct {
-    int clock_f;
-} scheduleData;
+//typedef struct {
+//    int clock_f;
+//} scheduleData;
 
 //TCB
 typedef struct {
   void* y;
   void (*x)(void*);
-} std_tcb;
-
-//test struct
-typedef struct {
-    void (*x)(void*);
-    void* y;
-} test_struct;
+} tcb;
 
 // Declare global task data
 extern northTrainData ntd;
 extern eastTrainData etd;
+extern southTrainData std;
 extern westTrainData wtd;
 extern switchControlData scd;
-extern scheduleData sd;
+//extern scheduleData sd;
+
+// train control block 
+extern tcb taskArray[6];
 
 // Train control 
+void Schedule();
 void TrainCom (void* data);
 void SwitchControl (void* data);
 void NorthTrain (void* data);
 void WestTrain (void* data);
 void EastTrain (void* data);
-void Schedule (void* data);
+void SouthTrain (void* data);
+void SerialCom (void* data); 
 
-// Hardware related
+
+// System related
+void Startup();
 void InitBuzzer(int freq);
 
 // Misc helper functions
@@ -111,6 +130,7 @@ int RandomInt(int low, int high);
 char* GetDirection();
 void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);
+void SetSTData(unsignehd char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
 void SetSCData(unsigned char*);
-void SetSData();
+//void SetSData();
