@@ -11,23 +11,23 @@
 void __error__(char *pcFilename, unsigned long ulLine){}
 #endif
 
-//Initialize globals
-bool north = false;
-bool east = false;
-bool west = false;
+// train state data
+int dir_to;
+int dir_from;
 bool gridlock = false;
 bool trainPresent = false;
 unsigned int trainSize = 0;
 unsigned int globalCount = 0;
-int seed = 41;
-northTrainData ntd;
-eastTrainData etd;
-southTrainData std;
-westTrainData wtd;
+currentTrainData ntd;
+currentTrainData etd;
+currentTrainData std;
+currentTrainData wtd;
 switchControlData scd;
-//scheduleData sd;
+// task queue
 tcb taskArray[4];
-tcb 
+currentTrainData trains[4];
+// random seed
+int seed = 41;
 
 int main() {
     Startup();

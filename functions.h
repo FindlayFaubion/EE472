@@ -1,29 +1,29 @@
 
+#include "stdbool.h"
 #include "inc/hw_types.h"
+#include "inc/hw_ints.h"
 #include "driverlib/debug.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/systick.h"
+#include "inc/hw_nvic.h"
 #include "drivers/rit128x96x4.h"
-#include "stdbool.h"
-
-// hardware memory map, GPIO driver, and PWM driver
 #include "inc/hw_memmap.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
+#include "driverlib/interrupt.h"
 
 // random seed
 extern int seed;
 
 // Declare global state variables
-extern bool north;
-extern bool east;
-extern bool west;
-extern bool south;
 extern bool gridlock;
 extern bool trainPresent;
 extern unsigned int trainSize;
 extern unsigned int globalCount;
 extern bool gridlockChecked;
+extern int dir_to;
+extern int dir_from;
 
 // Define common constants
 #define OLED_FREQ 1000000
@@ -43,40 +43,44 @@ extern bool gridlockChecked;
 #define STSOUND_LEN 24
 #define WTLIGHT_LEN 4
 #define WTSOUND_LEN 14
+#define BUTTON_PINS 0x000000FF
 
-
-//NorthTraindata
-typedef struct {
-    unsigned char* light; //assuming globalcount++ = 0.5 s
-    unsigned char* sound;
-    int i; //count for delays and sound
-} northTrainData;
-
-//EastTraindata
-typedef struct {
-    unsigned char* light; 
-    unsigned char* sound;
-    int i;
-} eastTrainData;
-
-//SouthTraindata
-typedef struct {
-    unsigned char* light; 
-    unsigned char* sound;
-    int i;
-} southTrainData;
-
-//WestTraindata
-typedef struct {
-    unsigned char* light; 
-    unsigned char* sound;
-    int i;
-} westTrainData;
+////NorthTraindata
+//typedef struct {
+//    unsigned char* light; //assuming globalcount++ = 0.5 s
+//    unsigned char* sound;
+//    int lightlen;
+//    int soundlen;
+//    int i; //count for delays and sound
+//} northTrainData;
+//
+////EastTraindata
+//typedef struct {
+//    unsigned char* light; 
+//    unsigned char* sound;
+//    int i;
+//} eastTrainData;
+//
+////SouthTraindata
+//typedef struct {
+//    unsigned char* light; 
+//    unsigned char* sound;
+//    int i;
+//} southTrainData;
+//
+////WestTraindata
+//typedef struct {
+//    unsigned char* light; 
+//    unsigned char* sound;
+//    int i;
+//} westTrainData;
 
 //CurrentTrainData
 typedef struct {
     unsigned char* light; 
     unsigned char* sound;
+    int lightlen;
+    int soundlen;
     int i;
 } currentTrainData;
 
@@ -100,37 +104,38 @@ typedef struct {
 } tcb;
 
 // Declare global task data
-extern northTrainData ntd;
-extern eastTrainData etd;
-extern southTrainData std;
-extern westTrainData wtd;
+extern currentTrainData ntd;
+extern currentTrainData etd;
+extern currentTrainData std;
+extern currentTrainData wtd;
 extern switchControlData scd;
 //extern scheduleData sd;
 
 // train control block 
-extern tcb taskArray[6];
+extern tcb taskArray[4];
+
+// current train array
+extern currentTrainData trains[4];
 
 // Train control 
 void Schedule();
 void TrainCom (void* data);
 void SwitchControl (void* data);
-void NorthTrain (void* data);
-void WestTrain (void* data);
-void EastTrain (void* data);
-void SouthTrain (void* data);
+void CurrentTrain (void* data);
 void SerialCom (void* data); 
-
 
 // System related
 void Startup();
 void InitBuzzer(int freq);
 
+// Interrupt handlers
+void ButtonHandler();
+
 // Misc helper functions
 int RandomInt(int low, int high);
-char* GetDirection();
+char* GetDirection(int dir);
 void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);
-void SetSTData(unsignehd char*, unsigned char*);
+void SetSTData(unsigned char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
 void SetSCData(unsigned char*);
-//void SetSData();
