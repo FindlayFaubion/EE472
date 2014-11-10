@@ -162,7 +162,6 @@ void TrainCom(void* d) {
         RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 10, OLED_LEVEL);
         RIT128x96x4StringDraw(CLEAR_SCREEN, 0, 0, OLED_LEVEL);
         PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-        
 	// [display from direction]
 	// [display train size]
 	// [passenger count]
@@ -174,6 +173,7 @@ void TrainCom(void* d) {
 	dir_to = RandomInt(0, 3);
 	// create a random value for trainSize between 2 and 9
 	trainSize = RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
+	
 }
 
 // Handles the routing of trains
@@ -205,9 +205,10 @@ void SwitchControl(void* d){
 			}
 			// reset if delay has elapsed
 			if (scd->i > scd->delay) {
-//				west = false;
-//				east = false;   
-//				north = false;
+				gridlock = false;
+				scd->gridlockChecked = false;
+				scd->i = 0;
+			}
                          // case3 train is present and not gridlocked
                         } else {
                         RIT128x96x4StringDraw(GetDirection(dir_from), 0, 0, OLED_LEVEL);
@@ -228,8 +229,10 @@ void CurrentTrain(void* d) {
   if(!gridlock){
     currentTrainData* ctd = (currentTrainData*) d;
     if (ctd->light[globalCount % ctd->lightlen]){ 
-  currentTrainData* ctd = (currentTrainData*) d;
-  if (ctd->light[globalCount % ctd->lightlen]){ 
+		char* display = GetDirection(dir_to);
+		//display[11] = (char) trainSize + ASCII_OFFSET;
+		display[8] = '\0'; 
+		RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
     } else {
 		RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
     }
@@ -241,13 +244,6 @@ void CurrentTrain(void* d) {
   }
   ctd->i++;
   }
-  
-  if (ctd->i < ctd->soundlen && ctd->sound[ctd->i]) { 
-		PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-  } else {
-		PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-  }
-  ctd->i++;
 }
 
 
