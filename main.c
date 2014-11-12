@@ -14,6 +14,9 @@ void __error__(char *pcFilename, unsigned long ulLine){}
 // train state data
 int dir_to;
 int dir_from;
+int pass_count;
+int pulse_count = 0;
+bool serial_flag = true;
 bool gridlock = false;
 bool trainPresent = false;
 unsigned int trainSize = 0;
@@ -27,7 +30,7 @@ switchControlData scd;
 tcb taskArray[4];
 currentTrainData trains[4];
 // random seed
-int seed = 41;
+int seed = 38;
 
 int main() {
     Startup();

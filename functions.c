@@ -1,4 +1,3 @@
-
 #include "inc/hw_types.h"
 #include "driverlib/debug.h"
 #include "driverlib/sysctl.h"
@@ -10,39 +9,14 @@
 // Handle timing 
 void Schedule(void* d) {
 	int i;
-  GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0xFF); //write GPIO LED0 on for testing
-  
-  // GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_59, 0xF8);
-  //scheduleData* sd = (scheduleData*) d;
-  // Increment global count
-  globalCount++; 
-  //RIT128x96x4Clear();
-  // Extract global count into characters
-  char a[8] = "      \0";
-  int global = globalCount;
-  for (i = 5; i >=0 && global != 0; i--) {
-			a[i] = global % 10 + ASCII_OFFSET;
-			global = global / 10;
-  }
-  while(i >= 0) {
-			a[i] = ' ';
-			i--;
-  }
-  
-  // Display global count
-  RIT128x96x4StringDraw(a, 20, 50, OLED_LEVEL);
-  
-  // Delay execution
-  SysCtlDelay(SysCtlClockGet() / 6); // 6 produces 500 ms delay
-  
-	bool tp_prev = trainPresent;
-  
-  // execute queue
-//  i = 0;
-//  while(taskArray[i].y) {
-//  	(*taskArray[i].x)(taskArray[i].y);
-//     i++;
-//  }
+        
+        int glb_cnt_prev = globalCount;
+        // Display global count
+        char a[7];
+        IntToString(globalCount, a, 7);
+        RIT128x96x4StringDraw(a, BASE_X+SHIFT_X, BASE_Y+GLOB, OLED_LEVEL);
+        
+        // execute queue
 	for(i = 0; taskArray[i].y; i++) { 
 		(*taskArray[i].x)(taskArray[i].y);
 	}
@@ -66,21 +40,34 @@ void Schedule(void* d) {
 		taskArray[p].x = CurrentTrain;
 		taskArray[p].y = (void*) &trains[dir_to];
 		p++;
-	} 
+	}
 	// serial com
-	if(trainPresent != tp_prev) {
+	if(serial_flag) {
+                serial_flag = false;
 		taskArray[p].x = SerialCom;
 		taskArray[p].y = (void*) &ntd; // data unused
 		p++;
 	}
 	// terminate task queue
 	taskArray[p].y = 0;
-
+        
+        // get the frequency and update the number of passengers  
+        int pulse_freq = pulse_count * 2;
+        pass_count = GetPassengers(pulse_freq);
+        if (pass_count < 0) {
+          pass_count = 0;
+        }
+        pulse_count = 0;
+        
+        // Delay until the next global count
+        while(glb_cnt_prev == globalCount) {};
+     
 }
 
 
 // Startup function
 void Startup() {
+    ///////////////////////////////////////////////////////////////////////////
     // Set the clocking to run directly from the crystal
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
 
@@ -89,8 +76,10 @@ void Startup() {
 
     // Initialize PWM buzzer
     InitBuzzer(FREQUENCY);
-
-    // Initialize ISR's
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // Initialize ISR for pushbuttons
+    
     //Clear the default ISR handler and install IntGPIOe as the handler:
     GPIOPortIntUnregister(GPIO_PORTE_BASE);
     GPIOPortIntRegister(GPIO_PORTE_BASE, ButtonHandler);
@@ -112,7 +101,68 @@ void Startup() {
     GPIOPinIntEnable(GPIO_PORTE_BASE, BUTTON_PINS);
     IntEnable(INT_GPIOE);
     IntMasterEnable();
+    
+    ///////////////////////////////////////////////////////////////////////////
+        // Initialize ISR for function generator 
+    
+    //Clear the default ISR handler and install IntGPIOe as the handler:
+    GPIOPortIntUnregister(GPIO_PORTF_BASE);
+    GPIOPortIntRegister(GPIO_PORTF_BASE, PulseCount);
+
+    //Enable GPIO port E, set pin 0 as an input
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);    
+    GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, PULSE_PIN);
+    
+    //GPIODirModeSet(GPIO_PORTE_BASE, GPIO_PIN_0, GPIO_DIR_MODE_IN);
+
+    //Activate the pull-up on GPIO port F
+    GPIOPadConfigSet(GPIO_PORTF_BASE, PULSE_PIN, GPIO_STRENGTH_2MA,
+                     GPIO_PIN_TYPE_STD_WPU);
+    
+    //Configure GPIO port E as triggering on falling edges
+    GPIOIntTypeSet(GPIO_PORTF_BASE, PULSE_PIN, GPIO_FALLING_EDGE);
+    
+    //Enable interrupts for GPIO port F
+    GPIOPinIntEnable(GPIO_PORTF_BASE, PULSE_PIN);
+    IntEnable(INT_GPIOF);
+//    IntMasterEnable();
+    
+     ///////////////////////////////////////////////////////////////////////////
+    // Initialize ISR for timer/global count
+    
+    TimerIntUnregister(TIMER1_BASE, TIMER_A);
+    TimerIntRegister(TIMER1_BASE, TIMER_A, IntTimer1);
+
+    //Enable Timer 1    
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
+
+    //Configure Timer 1 and set the timebase to 0.5 second    
+    TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
+    TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet() / 2);    
+    
+    //Enable interrupts for Timer0 and activate it
+    IntEnable(INT_TIMER1A);
+    TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+    TimerEnable(TIMER1_BASE, TIMER_A);
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // Initialize serial comm
+    
+    //Include peripherals GPIOA and UART0
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+    
+     // Set GPIO A0 and A1 as UART pins.
+    GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+
+    // Configure the UART for 115,200, 8-N-1 operation.
+    UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 115200,
+                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
+                         UART_CONFIG_PAR_NONE));
+   
+    ///////////////////////////////////////////////////////////////////////////
     // Initialize task queue
+    
             // Train com
     taskArray[0].x = TrainCom;
     taskArray[0].y = (void*) &ntd; //data not actually used
@@ -153,74 +203,96 @@ void Startup() {
     trains[2] = std; 
     trains[3] = wtd;
 
+    // Set display labels 
+    RIT128x96x4StringDraw("Trn Pres: \0",BASE_X, BASE_Y+PRES, OLED_LEVEL);
+    RIT128x96x4StringDraw("Trn Size: \0",BASE_X, BASE_Y+SZ, OLED_LEVEL);
+    RIT128x96x4StringDraw("From Dir: \0",BASE_X, BASE_Y+FROM, OLED_LEVEL);
+    RIT128x96x4StringDraw("To Dir: \0",  BASE_X, BASE_Y+TO, OLED_LEVEL);
+    RIT128x96x4StringDraw("Ppl. Ct: \0", BASE_X, BASE_Y+PASS, OLED_LEVEL);
+    RIT128x96x4StringDraw("Glb Ct: \0",  BASE_X, BASE_Y+GLOB, OLED_LEVEL);
 }
 
 // Sets the train direction, and train size
 void TrainCom(void* d) {
-	
-        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
-        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 10, OLED_LEVEL);
-        RIT128x96x4StringDraw(CLEAR_SCREEN, 0, 0, OLED_LEVEL);
-        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-        
-	// [display from direction]
-	// [display train size]
-	// [passenger count]
-		//display[11] = (char) trainSize + ASCII_OFFSET;
-//		display[8] = '\0'; 
-//		RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
+	// Clear to-direction, from-direction, gridlock, and passenger count
+        RIT128x96x4StringDraw("N \0", BASE_X+SHIFT_X, BASE_Y+PRES, OLED_LEVEL);  
+        RIT128x96x4StringDraw(NA, BASE_X+SHIFT_X, BASE_Y+TO, OLED_LEVEL);
+        RIT128x96x4StringDraw(NA, BASE_X+SHIFT_X, BASE_Y+SZ, OLED_LEVEL);
+        RIT128x96x4StringDraw(NA, BASE_X+SHIFT_X, BASE_Y+FROM, OLED_LEVEL);
+        RIT128x96x4StringDraw(NA, BASE_X+SHIFT_X, BASE_Y+PASS, OLED_LEVEL);
+        RIT128x96x4StringDraw(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+GRIDL, OLED_LEVEL);
 
-	// generate a random direction
+        // Clear the buzzer
+        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
+
+	// generate a random to-direction
 	dir_to = RandomInt(0, 3);
+
 	// create a random value for trainSize between 2 and 9
-	trainSize = RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
+	//trainSize = RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
+        trainSize = 2;
+        
+        // reset the delay counter for light and sound
+	trains[dir_to].i = 0;
 }
 
 // Handles the routing of trains
 void SwitchControl(void* d){ 
-  switchControlData* scd = (switchControlData*) d;
-	// case 1 (trainpresent, gridlock not checked)
-  if (!(scd->gridlockChecked)) {
-		// check for a gridlock
-		int n = RandomInt(-2, 2);
-		if (n < 0) {
-				scd->delay = -0.2 * n * GLOBAL_CNT_PER_MIN;
-				gridlock = true;
-				trainPresent = false;
-		} else {
-			scd->delay = 0.1 * trainSize * GLOBAL_CNT_PER_MIN;
-		}
-		// update state 
-		scd->gridlockChecked = true; 
-  }
-  // case2 (gridlocked)
-  if (gridlock) {
-			RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
-			// issue visual alarm (0.5 sec on, 0.5 off) 
-			if (scd->light[globalCount % 2]){ 
-				char display[32] = "GRIDLOCK \0";
-				RIT128x96x4StringDraw(display, 30, 10, OLED_LEVEL);
-			}else{
-				RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 10, OLED_LEVEL);
-			}
-			// reset if delay has elapsed
-			if (scd->i > scd->delay) {
-//				west = false;
-//				east = false;   
-//				north = false;
-                         // case3 train is present and not gridlocked
-                        } else {
-                        RIT128x96x4StringDraw(GetDirection(dir_from), 0, 0, OLED_LEVEL);
-			// reset if delay has elapsed
-			if (scd->i > scd->delay) {
-				trainPresent = false;
-				scd->gridlockChecked = false;
-				trainSize = 0;
-				scd->i = 0;
-                          
-			}
-  }
-  scd->i++;
+    switchControlData* scd = (switchControlData*) d;
+    // case 1 (trainpresent, gridlock not checked)
+    if (!(scd->gridlockChecked)) {
+        // check for a gridlock
+        //int n = RandomInt(-2, 2);
+        int n = 1;
+        if (n < 0) {
+            scd->delay = -0.2 * n * GLOBAL_CNT_PER_MIN;
+            gridlock = true;
+            trainPresent = false;
+            serial_flag = true;
+        } else {
+            char train_sz[2];
+            char passengers[4];
+            IntToString(trainSize, train_sz, 2);
+            IntToString(pass_count, passengers, 4);
+            RIT128x96x4StringDraw(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+SZ, OLED_LEVEL);
+            RIT128x96x4StringDraw("Y \0", BASE_X+SHIFT_X, BASE_Y+PRES, OLED_LEVEL);
+            RIT128x96x4StringDraw(passengers, BASE_X+SHIFT_X, BASE_Y+PASS, OLED_LEVEL);
+            RIT128x96x4StringDraw(train_sz, BASE_X+SHIFT_X, BASE_Y+SZ, OLED_LEVEL);
+            RIT128x96x4StringDraw(GetDirection(dir_from), BASE_X+SHIFT_X, BASE_Y+FROM, OLED_LEVEL);
+
+            scd->delay = 0.1 * trainSize * GLOBAL_CNT_PER_MIN;
+        }
+        // update state 
+        scd->gridlockChecked = true; 
+    }
+    // case2 (gridlocked)
+    if (gridlock) {
+        // issue visual alarm (0.5 sec on, 0.5 off) 
+        if (scd->light[globalCount % 2]){ 
+            char display[32] = "GRIDLOCK \0";
+            RIT128x96x4StringDraw(display, BASE_X+SHIFT_X, BASE_Y+GRIDL, OLED_LEVEL);
+        }else{
+                RIT128x96x4StringDraw(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+GRIDL, OLED_LEVEL);
+        }
+        // reset if delay has elapsed
+        if (scd->i > scd->delay) {
+                serial_flag = true;
+                gridlock = false;
+                scd->gridlockChecked = false;
+                scd->i = 0;
+        }
+     // case3 train is present and not gridlocked
+    } else {
+        // reset if delay has elapsed
+        if (scd->i > scd->delay) {
+                serial_flag = true;
+                trainPresent = false;
+                scd->gridlockChecked = false;
+                trainSize = 0;
+                scd->i = 0;
+        }
+    }
+    scd->i++;
 }
 
 // Handle current train behavior
@@ -228,10 +300,10 @@ void CurrentTrain(void* d) {
   if(!gridlock){
     currentTrainData* ctd = (currentTrainData*) d;
     if (ctd->light[globalCount % ctd->lightlen]){ 
-  currentTrainData* ctd = (currentTrainData*) d;
-  if (ctd->light[globalCount % ctd->lightlen]){ 
+		char* display = GetDirection(dir_to);
+		RIT128x96x4StringDraw(display, BASE_X+SHIFT_X, BASE_Y+TO, OLED_LEVEL);
     } else {
-		RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
+		RIT128x96x4StringDraw(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+TO, OLED_LEVEL);
     }
   
   if (ctd->i < ctd->soundlen && ctd->sound[ctd->i]) { 
@@ -241,124 +313,60 @@ void CurrentTrain(void* d) {
   }
   ctd->i++;
   }
-  
-  if (ctd->i < ctd->soundlen && ctd->sound[ctd->i]) { 
-		PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-  } else {
-		PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-  }
-  ctd->i++;
 }
-
-
-//// Handle north train behavior
-//void NorthTrain(void* d) {
-//  northTrainData* ntd = (northTrainData*) d;
-//  if (north && trainPresent) {
-//    if (ntd->light[globalCount % NTLIGHT_LEN]){ 
-//        char display[32] = "NorthTrain   \0";
-//        display[11] = (char) trainSize + ASCII_OFFSET;
-//        RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
-//    }else{
-//        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
-//    }
-//    
-//    if (ntd->i < NTSOUND_LEN && ntd->sound[ntd->i]) { 
-//        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-//    }else{
-//        PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-//    }
-//    ntd->i++;
-//    
-//  }else{
-//    ntd->i = 0; 
-//  }
-//}
-
-//// Handle east train behavior
-//void EastTrain(void* d) {
-//  eastTrainData* etd = (eastTrainData*) d;
-//  if (east && trainPresent) {
-//    if (etd->light[globalCount % ETLIGHT_LEN]){ 
-//      char display[32] = "EastTrain   \0";
-//      display[10] = (char) trainSize + ASCII_OFFSET; 
-//     RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
-//    }else{
-//      RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
-//    }
-//    
-//    if (etd->i < ETSOUND_LEN && etd->sound[etd->i]) { 
-//      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-//    }else{
-//      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-//    }
-//    
-//    etd->i++;
-//    
-//  }else{
-//    etd->i = 0; 
-//  }
-//}
-
-//// Handle south train behavior
-//void SouthTrain(void* d) {
-//  southTrainData* std = (southTrainData*) d;
-//  if (south && trainPresent) {
-//    if (std->light[globalCount % STLIGHT_LEN]){ 
-//      char display[32] = "SouthTrain   \0";
-//      display[11] = (char) trainSize + ASCII_OFFSET; 
-//     RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
-//    }else{
-//      RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
-//    }
-//    
-//    if (std->i < STSOUND_LEN && std->sound[std->i]) { 
-//      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-//    }else{
-//      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-//    }
-//    
-//    std->i++;
-//    
-//  }else{
-//    std->i = 0; 
-//  }
-//}
-
-//// Handle west train behavior
-//void WestTrain(void* d) {
-//  westTrainData* wtd = (westTrainData*) d;
-//  if (west && trainPresent) {
-//    //Makes display flash
-//    if (wtd->light[globalCount % WTLIGHT_LEN]){ 
-//        char display[32] = "WestTrain    \0";
-//        display[10] = (char) trainSize + ASCII_OFFSET; 
-//        RIT128x96x4StringDraw(display, 30, 24, OLED_LEVEL);
-//    }else{
-//        RIT128x96x4StringDraw(CLEAR_SCREEN, 30, 24, OLED_LEVEL);
-//    }
-//    
-//    if (wtd->i < WTSOUND_LEN && wtd->sound[wtd->i]) { 
-//      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, true);
-//    }else{
-//      PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
-//    }
-//    
-//    wtd->i++;
-//    
-//  }else{
-//    wtd->i = 0; //reseting i to repeat pattern correctly on next train
-//  }
-//}
 
 // Serial communications
 void SerialCom(void* d) {
-  
+      unsigned char* str0 = "Train Present:           \r\n";
+      unsigned char* str1 = "Train Size:              \r\n";
+      unsigned char* str2 = "From Dir:                \r\n";
+      unsigned char* str3 = "To Dir:                  \r\n";
+      unsigned char* str4 = "Ppl Cnt:                 \r\n";
+      unsigned char* str5 = "Glb Cnt:               \r\n\n";
+      // 
+      //033[2J clear
+      //033[0;0H cursor
+      if(!gridlock) {
+        if(trainPresent){
+          str0[13] = (unsigned char) 3;
+          str1[UART_SHIFT] = (unsigned char) trainSize + ASCII_OFFSET;
+          unsigned char* dir_f = (unsigned char*) GetDirection(dir_from);
+          unsigned char* dir_t = (unsigned char*) GetDirection(dir_to);
+          for(int i = 0; i < 5; i++) str2[UART_SHIFT + i] = dir_f[i];
+          for(int i = 0; i < 5; i++) str3[UART_SHIFT + i] = dir_t[i];
+          unsigned char ppl_cnt[4];
+          IntToString(pass_count, ppl_cnt, 4);
+          for(int i = 0; i < 3; i++) str4[UART_SHIFT + i] = ppl_cnt[i];
+          unsigned char glb_cnt[8];
+          IntToString(globalCount, glb_cnt, 9);
+          for(int i = 0; i < 6; i++) str5[UART_SHIFT + i] = glb_cnt[i];
+        } else {
+          
+        }
+        //print stuff
+      } else {
+        //print gridlock
+      }
+      UARTCharPut(UART0_BASE, '\f');
+      UARTSend((const unsigned char*) str0, UART_STR_LEN);
+      UARTSend((const unsigned char*) str1, UART_STR_LEN);
+      UARTSend((const unsigned char*) str2, UART_STR_LEN);
+      UARTSend((const unsigned char*) str3, UART_STR_LEN);
+      UARTSend((const unsigned char*) str4, UART_STR_LEN);
+      UARTSend((const unsigned char*) str5, UART_STR_LEN);
 }
 
+//UART SEND  from stellarisware
+void UARTSend(const unsigned char *pucBuffer, unsigned long ulCount){
+    // Loop while there are more characters to send.
+    while(ulCount--) {
+        // Write the next character to the UART.
+        UARTCharPut(UART0_BASE, *pucBuffer++);
+    }
+}
 
 // set data for North Train
-void SetNTData(unsigned char* NTLight, unsigned char* NTSound) {
+void SetNTData(unsigned char* NTLight, unsigned char* NTSound){
   NTLight[0] = 1;
   NTLight[1] = 1;
   NTLight[2] = 1;
@@ -543,13 +551,13 @@ int RandomInt(int low, int high) {
 // Returns the direction of the current train as a string
 char* GetDirection(int dir) {
 		if (dir == 0) {
-			return "North        \0";
+			return "North \0";
 		} else if (dir == 1) {
-			return "East        \0";
+			return "East  \0";
 		} else if (dir == 2) {
-			return "South       \0";
+			return "South \0";
 		} else {
-			return "West        \0"; 
+			return "West  \0"; 
 		}
 }
 
@@ -566,7 +574,7 @@ void InitBuzzer(int freq) {
 		GPIOPinTypePWM(GPIO_PORTG_BASE, GPIO_PIN_1);
 		//Configure PWM0 in up-down count mode, no sync to clock
 		PWMGenConfigure(PWM0_BASE, PWM_GEN_0,
-								 PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
+                    PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
 		//Set PWM period
 		PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, ulPeriod);
 		//Set PWM0, output 1 to a duty cycle of 1/8
@@ -596,7 +604,37 @@ void ButtonHandler() {
 					dir_from = 1;
 				}
 				trainPresent = true;
+                                serial_flag = true;
 		}
 
 }
-			   
+
+// Returns the number of passengers, given a pulse frequency
+int GetPassengers(int pulse_freq) {
+    return (int) 3.0/10.0 * pulse_freq - 300;
+}
+
+//ISR for Timer 1, increment global count
+void IntTimer1(void)
+{
+  //Clear the interrupt 
+  TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+  globalCount++;
+}
+
+//Interrupt for counting the number of FG pulses
+void PulseCount() {
+  pulse_count++;
+  GPIOPinIntClear(GPIO_PORTF_BASE, PULSE_PIN);
+}
+
+// converts an int to a string
+// allocates a string of fixed length
+void IntToString(int num, char* string, int len) {
+    int i;
+    for (i = len-2; i >=0; i--) {
+            string[i] = num % 10 + ASCII_OFFSET;
+            num = num / 10;
+    }
+    string[len-1] = '\0';
+}

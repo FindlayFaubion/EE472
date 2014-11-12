@@ -12,11 +12,14 @@
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/interrupt.h"
+#include "driverlib/uart.h"
+#include "driverlib/timer.h"
 
 // random seed
 extern int seed;
 
 // Declare global state variables
+extern bool serial_flag;
 extern bool gridlock;
 extern bool trainPresent;
 extern unsigned int trainSize;
@@ -24,6 +27,8 @@ extern unsigned int globalCount;
 extern bool gridlockChecked;
 extern int dir_to;
 extern int dir_from;
+extern int pass_count;
+extern int pulse_count;
 
 // Define common constants
 #define OLED_FREQ 1000000
@@ -31,9 +36,15 @@ extern int dir_from;
 #define TRAIN_SIZE_MIN 2  // min train size
 #define TRAIN_SIZE_MAX 9  // max train size
 #define GLOBAL_CNT_PER_MIN 120 // global counts per minute
-#define CLEAR_SCREEN "                \0"
+#define CLEAR_SCREEN "                        \0"
+#define NA "N/A    \0"
 #define FREQUENCY 75 //frequency used by train buzzer
 #define OLED_LEVEL 15 //brightness level for the OLED 
+
+// Hardware constants
+#define BUTTON_PINS 0x000000FF
+#define PULSE_PIN 0x00000004
+
 // global count lengths for the train light and sound
 #define NTLIGHT_LEN 6 
 #define NTSOUND_LEN 20
@@ -43,7 +54,21 @@ extern int dir_from;
 #define STSOUND_LEN 24
 #define WTLIGHT_LEN 4
 #define WTSOUND_LEN 14
-#define BUTTON_PINS 0x000000FF
+
+// Display coordinates 
+#define BASE_X 0 
+#define BASE_Y 0
+#define SHIFT_Y 10
+#define SHIFT_X 65
+#define PRES 0*SHIFT_Y 
+#define SZ 1*SHIFT_Y
+#define FROM 2*SHIFT_Y 
+#define TO 3*SHIFT_Y
+#define PASS 4*SHIFT_Y
+#define GLOB 5*SHIFT_Y
+#define GRIDL 6*SHIFT_Y
+#define UART_SHIFT 15
+#define UART_STR_LEN 27
 
 ////NorthTraindata
 //typedef struct {
@@ -128,12 +153,17 @@ void InitBuzzer(int freq);
 
 // Interrupt handlers
 void ButtonHandler();
+void IntTimer1();
+void PulseCount();
 
 // Misc helper functions
 int RandomInt(int low, int high);
+void IntToString(int num, char* string, int len);
 char* GetDirection(int dir);
+int GetPassengers(int freq);
 void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);
 void SetSTData(unsigned char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
 void SetSCData(unsigned char*);
+void UARTSend(const unsigned char*, unsigned long);
