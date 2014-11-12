@@ -43,7 +43,7 @@ extern int pulse_count;
 
 // Hardware constants
 #define BUTTON_PINS 0x000000FF
-#define PULSE_PIN 0x00000004
+#define PULSE_PIN 0x00000008
 
 // global count lengths for the train light and sound
 #define NTLIGHT_LEN 6 
@@ -159,7 +159,8 @@ void PulseCount();
 // Misc helper functions
 int RandomInt(int low, int high);
 void IntToString(int num, char* string, int len);
-char* GetDirection(int dir);
+void GetDirection(int dir, char word[]);
+//void GetDirectionArray(int dir, char word[]);
 int GetPassengers(int freq);
 void SetNTData(unsigned char*, unsigned char*);
 void SetETData(unsigned char*, unsigned char*);

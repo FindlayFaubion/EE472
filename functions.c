@@ -60,7 +60,7 @@ void Schedule(void* d) {
         pulse_count = 0;
         
         // Delay until the next global count
-        while(glb_cnt_prev == globalCount) {};
+        while(glb_cnt_prev >= globalCount) {};
      
 }
 
@@ -252,13 +252,15 @@ void SwitchControl(void* d){
         } else {
             char train_sz[2];
             char passengers[4];
+            char dir_f[7];
+            GetDirection(dir_from, dir_f);
             IntToString(trainSize, train_sz, 2);
             IntToString(pass_count, passengers, 4);
             RIT128x96x4StringDraw(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+SZ, OLED_LEVEL);
             RIT128x96x4StringDraw("Y \0", BASE_X+SHIFT_X, BASE_Y+PRES, OLED_LEVEL);
             RIT128x96x4StringDraw(passengers, BASE_X+SHIFT_X, BASE_Y+PASS, OLED_LEVEL);
             RIT128x96x4StringDraw(train_sz, BASE_X+SHIFT_X, BASE_Y+SZ, OLED_LEVEL);
-            RIT128x96x4StringDraw(GetDirection(dir_from), BASE_X+SHIFT_X, BASE_Y+FROM, OLED_LEVEL);
+            RIT128x96x4StringDraw(dir_f, BASE_X+SHIFT_X, BASE_Y+FROM, OLED_LEVEL);
 
             scd->delay = 0.1 * trainSize * GLOBAL_CNT_PER_MIN;
         }
@@ -300,7 +302,8 @@ void CurrentTrain(void* d) {
   if(!gridlock){
     currentTrainData* ctd = (currentTrainData*) d;
     if (ctd->light[globalCount % ctd->lightlen]){ 
-		char* display = GetDirection(dir_to);
+		char display[7];
+                GetDirection(dir_to, display);
 		RIT128x96x4StringDraw(display, BASE_X+SHIFT_X, BASE_Y+TO, OLED_LEVEL);
     } else {
 		RIT128x96x4StringDraw(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+TO, OLED_LEVEL);
@@ -317,37 +320,41 @@ void CurrentTrain(void* d) {
 
 // Serial communications
 void SerialCom(void* d) {
-      unsigned char* str0 = "Train Present:           \r\n";
-      unsigned char* str1 = "Train Size:              \r\n";
-      unsigned char* str2 = "From Dir:                \r\n";
-      unsigned char* str3 = "To Dir:                  \r\n";
-      unsigned char* str4 = "Ppl Cnt:                 \r\n";
-      unsigned char* str5 = "Glb Cnt:               \r\n\n";
+      unsigned char str0[] = "Train Present:            \0";
+      unsigned char str1[] = "Train Size:               \0";
+      unsigned char str2[] = "From Dir:                 \0";
+      unsigned char str3[] = "To Dir:                   \0";
+      unsigned char str4[] = "Ppl Cnt:                  \0";
+      unsigned char str5[] = "Glb Cnt:                  \0";
+      unsigned char str6[] = "Gridlock                  \0";
       // 
       //033[2J clear
       //033[0;0H cursor
       if(!gridlock) {
         if(trainPresent){
-          str0[13] = (unsigned char) 3;
-          str1[UART_SHIFT] = (unsigned char) trainSize + ASCII_OFFSET;
-          unsigned char* dir_f = (unsigned char*) GetDirection(dir_from);
-          unsigned char* dir_t = (unsigned char*) GetDirection(dir_to);
-          for(int i = 0; i < 5; i++) str2[UART_SHIFT + i] = dir_f[i];
-          for(int i = 0; i < 5; i++) str3[UART_SHIFT + i] = dir_t[i];
-          unsigned char ppl_cnt[4];
-          IntToString(pass_count, ppl_cnt, 4);
-          for(int i = 0; i < 3; i++) str4[UART_SHIFT + i] = ppl_cnt[i];
-          unsigned char glb_cnt[8];
-          IntToString(globalCount, glb_cnt, 9);
-          for(int i = 0; i < 6; i++) str5[UART_SHIFT + i] = glb_cnt[i];
+          //*(str0 + UART_SHIFT) = 'Y';
+          //str1[UART_SHIFT] = trainSize + ASCII_OFFSET;
+          //char dir_f[] = "       ";
+          //dir_f[0] = 'y';
+//          GetDirection(dir_from, dir_f);
+//          char dir_t[7]; 
+//          GetDirection(dir_to, dir_t);
+//          for(int i = 0; i < 5; i++) str2[UART_SHIFT + i] = dir_f[i];
+//          for(int i = 0; i < 5; i++) str3[UART_SHIFT + i] = dir_t[i];
+//          unsigned char ppl_cnt[4];
+//          IntToString(pass_count, ppl_cnt, 4);
+//          for(int i = 0; i < 3; i++) str4[UART_SHIFT + i] = ppl_cnt[i];
+//          unsigned char glb_cnt[8];
+//          IntToString(globalCount, glb_cnt, 9);
+//          for(int i = 0; i < 6; i++) str5[UART_SHIFT + i] = glb_cnt[i];
         } else {
           
         }
         //print stuff
       } else {
         //print gridlock
+        UARTSend((const unsigned char*) str6, UART_STR_LEN);
       }
-      UARTCharPut(UART0_BASE, '\f');
       UARTSend((const unsigned char*) str0, UART_STR_LEN);
       UARTSend((const unsigned char*) str1, UART_STR_LEN);
       UARTSend((const unsigned char*) str2, UART_STR_LEN);
@@ -549,15 +556,22 @@ int RandomInt(int low, int high) {
 }
 
 // Returns the direction of the current train as a string
-char* GetDirection(int dir) {
+void GetDirection(int dir, char dir_str[]) {
 		if (dir == 0) {
-			return "North \0";
+			char word[] =  "North \0";
+                        for (int i = 0; i < 7; i++) dir_str[i] = word[i];  
+                       
 		} else if (dir == 1) {
-			return "East  \0";
+			char word[] =  "East  \0";
+                        for (int i = 0; i < 7; i++) dir_str[i] = word[i];  
+                       
 		} else if (dir == 2) {
-			return "South \0";
+			char word[] =  "South \0";
+                        for (int i = 0; i < 7; i++) dir_str[i] = word[i];  
+                     
 		} else {
-			return "West  \0"; 
+			char word[] =  "West  \0";
+                        for (int i = 0; i < 7; i++) dir_str[i] = word[i];  
 		}
 }
 
