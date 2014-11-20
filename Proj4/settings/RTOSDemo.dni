@@ -1,0 +1,70 @@
+[CodeCoverage]
+Enabled=_ 0
+[DisAssemblyWindow]
+NumStates=_ 1
+State 1=_ 1
+[Profiling]
+Enabled=0
+[StackPlugin]
+Enabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnHow=0
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[DebugChecksum]
+Checksum=301421051
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[InstructionProfiling]
+Enabled=_ 0
+[CallStackLog]
+Enabled=0
+[LMIFTDI]
+LMIFTDIserialNo=06100BCDA
+LMIFTDIfoundProbes=
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[LMIFTDIDriver]
+LMI_ResetMode=0x00000000
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[DriverProfiling]
+Enabled=0
+Mode=0
+Graph=0
+Symbiont=0
+Exclusions=
+[SfrWindow]
+Show=1 1
+Sort=4 0
+[Disassemble mode]
+mode=1
+[Breakpoints]
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\..\E\Dev\FreeRTOS\WorkingCopy2\Demo\Common\Minimal\IntQueue.c}.363.2@1" 0 0 0 0 "" 0 ""
+Count=1
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[Aliases]
+A0=_ "O:\EE472\StellarisDevelopment\FreeRTOS0\Source\portable\IAR\ARM_CM3\portasm.s" "U:\EE472\FreeRTOS0\Source\portable\IAR\ARM_CM3\portasm.s"
+Count=1
+SuppressDialog=0
