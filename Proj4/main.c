@@ -1,3 +1,4 @@
+
 /*
     FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
@@ -95,35 +96,35 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 #define mainINCLUDE_WEB_SERVER		0
 
-
-/* Standard includes. */
-#include <stdio.h>
-
-/* Scheduler includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-
-/* Hardware library includes. */
-#include "hw_memmap.h"
-#include "hw_types.h"
-#include "hw_sysctl.h"
-#include "sysctl.h"
-#include "gpio.h"
-#include "grlib.h"
-#include "rit128x96x4.h"
-#include "osram128x64x4.h"
-#include "formike128x128x16.h"
-
-/* Demo app includes. */
-
-#include "lcd_message.h"
-#include "bitmap.h"
+///* Standard includes. */
+//#include <stdio.h>
+//
+///* Scheduler includes. */
+//#include "FreeRTOS.h"
+//#include "task.h"
+//#include "queue.h"
+//#include "semphr.h"
+//
+///* Hardware library includes. */
+//#include "hw_memmap.h"
+//#include "hw_types.h"
+//#include "hw_sysctl.h"
+//#include "sysctl.h"
+//#include "gpio.h"
+//#include "grlib.h"
+//#include "rit128x96x4.h"
+//#include "osram128x64x4.h"
+//#include "formike128x128x16.h"
+//
+///* Demo app includes. */
+//
+//#include "lcd_message.h"
+//#include "bitmap.h"
 
 /* Train task includes */
-#include "functions.c"
+
 #include "functions.h"
+#define H
 
 /*-----------------------------------------------------------*/
 
@@ -150,7 +151,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 
 //  The maximum number of messages that can be waiting for display at any one time.
-  #define mainOLED_QUEUE_SIZE					( 3 )
+  #define mainOLED_QUEUE_SIZE					( 10 )
 
 // Dimensions the buffer into which the jitter time is written. 
   #define mainMAX_MSG_LEN						25
@@ -172,6 +173,29 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 #define mainFULL_SCALE			    ( 15 )
 #define ulSSI_FREQUENCY			    ( 3500000UL )
 
+
+/*our globals and stuff*/
+// train state data
+int dir_to;
+int dir_from;
+int pass_count;
+int pulse_count = 0;
+bool active = false;
+bool serial_flag = true;
+bool gridlock = false;
+bool trainPresent = false;
+unsigned int trainSize = 0;
+unsigned int globalCount = 0;
+currentTrainData ntd;
+currentTrainData etd;
+currentTrainData std;
+currentTrainData wtd;
+switchControlData scd;
+// task queue
+tcb taskArray[4];
+currentTrainData trains[4];
+// random seed
+int seed = 38;
 /*-----------------------------------------------------------*/
 
 /*
@@ -223,6 +247,11 @@ void vTask3(void *vParameters);
 */
 xQueueHandle xOLEDQueue;
 
+xTaskHandle    TrainComHandle;
+xTaskHandle    SwitchControlHandle;
+xTaskHandle    SerialComHandle;
+xTaskHandle    CurrentTrainHandle;
+
 /*-----------------------------------------------------------*/
 
 
@@ -232,7 +261,7 @@ xQueueHandle xOLEDQueue;
  * various Luminary Micro EKs.
  *************************************************************************/
 
-int main( void )
+ int main( void )
 {
     prvSetupHardware();
 
@@ -265,14 +294,15 @@ int main( void )
     /* Initialize train specific hardware and data */ 
     Startup();
     
+    
     /* Start the tasks */
     
-    xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-
-    xTaskCreate(vTask1, "Test 1", 100,NULL, 1,NULL);
-    xTaskCreate(vTask2, "Task 2", 100,NULL, 2,NULL);
-    xTaskCreate(vTask3, "Task 3", 100,NULL, 3,NULL);
     
+    xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate(TrainCom, "AA", 200,NULL, 1,TrainComHandle);
+    xTaskCreate(SwitchControl, "C", 200,NULL, 1,SwitchControlHandle);
+    xTaskCreate(CurrentTrain, "B", 200, (void*) NULL, 1,CurrentTrainHandle);
+    xTaskCreate(SerialCom, "BB", 200,(void*) &scd, 1,SerialComHandle);
     /*
       Configure the high frequency interrupt used to measure the interrupt
       jitter time. 
@@ -375,7 +405,7 @@ void vOLEDTask( void *pvParameters )
     vOLEDImageDraw = RIT128x96x4ImageDraw;
     vOLEDClear = RIT128x96x4Clear;
     ulMaxY = mainMAX_ROWS_96;
-    pucImage = pucBasicBitmap;
+   // pucImage = pucBasicBitmap;
               
 // Just for demo purposes.
     uxUnusedStackOnEntry = uxTaskGetStackHighWaterMark( NULL );
@@ -393,18 +423,18 @@ void vOLEDTask( void *pvParameters )
   
       // Write the message on the next available row. 
       
-      ulY += mainCHARACTER_HEIGHT;
-      if( ulY >= ulMaxY )
-      {
-          ulY = mainCHARACTER_HEIGHT;
-          vOLEDClear();
-      }
+//      ulY += mainCHARACTER_HEIGHT;
+//      if( ulY >= ulMaxY )
+//      {
+//          ulY = mainCHARACTER_HEIGHT;
+//          vOLEDClear();
+//      }
   
       // Display the message  
                       
       sprintf( cMessage, "%s", xMessage.pcMessage);
       
-      vOLEDStringDraw( cMessage, 0, ulY, mainFULL_SCALE );
+      vOLEDStringDraw( cMessage, xMessage.XLOC, xMessage.YLOC, mainFULL_SCALE );
       
   }
 }

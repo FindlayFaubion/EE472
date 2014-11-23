@@ -1,4 +1,29 @@
+/* Standard includes. */
+#include <stdio.h>
 
+/* Scheduler includes. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+
+/* Hardware library includes. */
+#include "hw_memmap.h"
+#include "hw_types.h"
+#include "hw_sysctl.h"
+#include "sysctl.h"
+#include "gpio.h"
+#include "grlib.h"
+#include "rit128x96x4.h"
+#include "osram128x64x4.h"
+#include "formike128x128x16.h"
+
+/* Demo app includes. */
+
+#include "lcd_message.h"
+//#include "bitmap.h"
+
+//OUR stuff
 #include "stdbool.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -14,7 +39,13 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/uart.h"
 #include "driverlib/timer.h"
+#include <math.h>
 
+
+
+
+//OLED queue
+extern xQueueHandle xOLEDQueue;
 // random seed
 extern int seed;
 
@@ -37,13 +68,14 @@ extern int pulse_count;
 #define TRAIN_SIZE_MAX 9  // max train size
 #define GLOBAL_CNT_PER_MIN 120 // global counts per minute
 #define CLEAR_SCREEN "                        \0"
-#define NA "N/A    \0"
+#define NA "N/A    "
 #define FREQUENCY 75 //frequency used by train buzzer
 #define OLED_LEVEL 15 //brightness level for the OLED 
 
 // Hardware constants
 #define BUTTON_PINS 0x000000FF
 #define PULSE_PIN 0x00000004
+#define DELAY 500
 
 // global count lengths for the train light and sound
 #define NTLIGHT_LEN 6 
@@ -70,35 +102,6 @@ extern int pulse_count;
 #define UART_SHIFT 15
 #define UART_STR_LEN 27
 
-////NorthTraindata
-//typedef struct {
-//    unsigned char* light; //assuming globalcount++ = 0.5 s
-//    unsigned char* sound;
-//    int lightlen;
-//    int soundlen;
-//    int i; //count for delays and sound
-//} northTrainData;
-//
-////EastTraindata
-//typedef struct {
-//    unsigned char* light; 
-//    unsigned char* sound;
-//    int i;
-//} eastTrainData;
-//
-////SouthTraindata
-//typedef struct {
-//    unsigned char* light; 
-//    unsigned char* sound;
-//    int i;
-//} southTrainData;
-//
-////WestTraindata
-//typedef struct {
-//    unsigned char* light; 
-//    unsigned char* sound;
-//    int i;
-//} westTrainData;
 
 //CurrentTrainData
 typedef struct {
@@ -134,6 +137,7 @@ extern currentTrainData etd;
 extern currentTrainData std;
 extern currentTrainData wtd;
 extern switchControlData scd;
+extern bool active;
 //extern scheduleData sd;
 
 // global train data
@@ -168,3 +172,4 @@ void SetSTData(unsigned char*, unsigned char*);
 void SetWTData(unsigned char*, unsigned char*);
 void SetSCData(unsigned char*);
 void UARTSend(const unsigned char*, unsigned long);
+void Print(signed char*, int, int);

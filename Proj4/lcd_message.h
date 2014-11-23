@@ -4,6 +4,9 @@
 typedef struct
 {
 	signed char *pcMessage;
+        int XLOC;
+        int YLOC;
+        
 } xOLEDMessage;
 
 #endif /* LCD_MESSAGE_H */

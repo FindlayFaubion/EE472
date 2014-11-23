@@ -37,12 +37,45 @@ ShowSource=1
 [Simulator]
 Freq=10000000
 MultiCoreRunAll=1
+[LMIFTDIDriver]
+LMI_ResetMode=0x00000000
+[LMIFTDI]
+LMIFTDIserialNo=06100BCDA
+LMIFTDIfoundProbes=
+[DebugChecksum]
+Checksum=-1151828910
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
 [Disassemble mode]
 mode=0
 [Breakpoints]
-Count=0
-[LMIFTDIDriver]
-LMI_ResetMode=0x00000000
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\functions.c}.22.1" 0 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "0x0000010A" 0 0 0 0 "" 0 ""
+Count=2
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
 [Aliases]
-Count=0
+A0=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\ethernet.c" ""
+A1=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\gpio.c" ""
+A2=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\interrupt.c" ""
+A3=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\sysctl.c" ""
+A4=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\timer.c" ""
+A5=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\uart.c" ""
+Count=6
 SuppressDialog=0
+[DriverProfiling]
+Enabled=0
+Mode=0
+Graph=0
+Symbiont=0
+Exclusions=
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""

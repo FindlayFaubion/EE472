@@ -32,7 +32,7 @@
 //
 //*****************************************************************************
 #pragma language=extended
-
+#include "functions.h"
 //*****************************************************************************
 //
 // Forward declaration of the default fault handlers.
@@ -62,6 +62,11 @@ extern void vT2InterruptHandler( void );
 extern void vT3InterruptHandler( void );
 extern void vEMAC_ISR( void );
 extern void Timer0IntHandler( void );
+extern void IntDefaultHandlerA( void );
+
+//Our stuff
+extern void ButtonHandler( void );
+extern void PulseCount( void );
 
 //*****************************************************************************
 //
@@ -117,7 +122,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
-    IntDefaultHandler,                      // GPIO Port E
+    ButtonHandler,                     // GPIO Port E
     IntDefaultHandler,                      // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx
     IntDefaultHandler,                      // SSI Rx and Tx
@@ -143,7 +148,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // Analog Comparator 2
     IntDefaultHandler,                      // System Control (PLL, OSC, BO)
     IntDefaultHandler,                      // FLASH Control
-    IntDefaultHandler,                      // GPIO Port F
+    PulseCount,                             // GPIO Port F
     IntDefaultHandler,                      // GPIO Port G
     IntDefaultHandler,                      // GPIO Port H
     IntDefaultHandler,                      // UART2 Rx and Tx
@@ -160,7 +165,7 @@ __root const uVectorEntry __vector_table[] @ ".intvec" =
     IntDefaultHandler,                      // USB0
     IntDefaultHandler,                      // PWM Generator 3
     IntDefaultHandler,                      // uDMA Software Transfer
-    IntDefaultHandler                       // uDMA Error
+    IntDefaultHandler,                       // uDMA Error
 };
 
 
@@ -216,4 +221,49 @@ IntDefaultHandler(void)
     while(1)
     {
     }
+}
+
+
+static void IntDefaultHandlerA (void){
+  while(1){ 
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Interrupt handler for button press
+//void ButtonHandler() {
+//  unsigned char buttons = GPIOPinRead(GPIO_PORTE_BASE, BUTTON_PINS);
+//  //Clear the interrupt 
+//   xOLEDMessage xMessage;
+//   xMessage.pcMessage = "ButtonWorked";
+//   xMessage.XLOC = BASE_X;
+//   xMessage.YLOC = BASE_Y;
+//   xQueueSend( xOLEDQueue, &xMessage, 0 );
+//
+//  GPIOPinIntClear(GPIO_PORTE_BASE, BUTTON_PINS);
+//  //set the direction
+//  if (!trainPresent && !gridlock) {	
+//    //Read from all four buttons
+//    //unsigned char buttons = GPIOPinRead(GPIO_PORTE_BASE, BUTTON_PINS);
+//    //Invert since buttons are active low
+//    buttons = ~buttons;
+//    if(buttons % 2) {  	
+//      dir_from = 0;
+//    } else if ((buttons / 2) % 2){
+//      dir_from = 2;
+//    } else if ((buttons / 4) % 2){
+//      dir_from = 3;
+//    }else if ((buttons / 8) % 2){
+//      dir_from = 1;
+//    }
+//    trainPresent = true;
+//    serial_flag = true;
+//  }
+//  
+//}
+
+//Interrupt for counting the number of FG pulses
+void PulseCount() {
+  pulse_count++;
+  GPIOPinIntClear(GPIO_PORTF_BASE, PULSE_PIN);
 }
