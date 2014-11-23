@@ -15,7 +15,7 @@
 #include "functions.h"
 #define H
 #endif
-    
+
 
 // Handle timing 
 void Schedule(void* d) {
@@ -80,7 +80,7 @@ void Schedule(void* d) {
 void Startup() {
     ///////////////////////////////////////////////////////////////////////////
     // Set the clocking to run directly from the crystal
-    //SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
+    // SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
 
     // Initialize the OLED
     RIT128x96x4Init(OLED_FREQ);
@@ -151,13 +151,13 @@ IntEnable(INT_GPIOE);
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
 
     //Configure Timer 1 and set the timebase to 0.5 second    
-    //TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
-    //TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet() / 2);    
+    TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
+    TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet() / 2);    
     
     //Enable interrupts for Timer0 and activate it
-    //IntEnable(INT_TIMER1A);
-    //TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
-    //TimerEnable(TIMER1_BASE, TIMER_A);
+    IntEnable(INT_TIMER1A);
+    TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+    TimerEnable(TIMER1_BASE, TIMER_A);
     
     ///////////////////////////////////////////////////////////////////////////
     // Initialize serial comm
@@ -181,17 +181,16 @@ IntEnable(INT_GPIOE);
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC); // set ADC clock
     
     
-    //ADCSequenceDisable(ADC_BASE, 0); // disable all sequences 
+    ADCSequenceDisable(ADC_BASE, 0); // disable all sequences 
     ADCSequenceDisable(ADC_BASE, 1);  
     ADCSequenceDisable(ADC_BASE, 2);
     ADCSequenceDisable(ADC_BASE, 3);
 
     ADCSequenceConfigure(ADC_BASE, 0, ADC_TRIGGER_PROCESSOR, 0); // set ADC sequence (highest priority)
 
-   ADCSequenceStepConfigure(ADC_BASE, 0, 0, ADC_CTL_IE | ADC_CTL_END | ADC_CTL_CH0);
- // single step, read from ADC0 on sequence 0
+    ADCSequenceStepConfigure(ADC_BASE, 0, 0, ADC_CTL_CH0); // single step, read from ADC0 on sequence 0
 
-    ADCSequenceEnable(ADC_BASE, 0); // enable ADC0
+
 
     
 
@@ -241,9 +240,9 @@ IntEnable(INT_GPIOE);
 
 // Sets the train direction, and train size
 void TrainCom(void* d) {
-//  int lastWake = xTaskGetTickCount();
+  int lastWake = xTaskGetTickCount();
   while (1) {    
-//    vTaskDelayUntil(&lastWake, DELAY );
+    vTaskDelayUntil(&lastWake, DELAY );
     
     if (!trainPresent && !gridlock) {
       // Clear to-direction, from-direction, gridlock, and passenger count
@@ -254,8 +253,7 @@ void TrainCom(void* d) {
       Print(NA, BASE_X+SHIFT_X, BASE_Y+FROM);
       Print(NA, BASE_X+SHIFT_X, BASE_Y+PASS);
       Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+GRIDL);
-       Print(CLEAR_SCREEN, BASE_X, BASE_Y+GRIDL);
-
+      
       // Clear the buzzer
       //PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
       
@@ -267,19 +265,17 @@ void TrainCom(void* d) {
       
       // reset the delay counter for light and sound
       trains[dir_to].i = 0;
-      Print("TrainCom", 0, 80);   
+      Print("TrainCom", 0, 80); 
     }
-     vTaskDelay(DELAY);
   }
-
 }
 
 
 // Handles the routing of trains
 void SwitchControl(void* d){ 
-//     int lastWake = xTaskGetTickCount();
+     int lastWake = xTaskGetTickCount();
   while(1){
-//    vTaskDelayUntil(&lastWake, DELAY );
+    vTaskDelayUntil(&lastWake, DELAY );
     if(trainPresent || gridlock) {
       switchControlData* scd = (switchControlData*) d;
       
@@ -316,10 +312,10 @@ void SwitchControl(void* d){
       if (gridlock) {
         // issue visual alarm (0.5 sec on, 0.5 off) 
         if (scd->light[globalCount % 2]){ 
-          //char display[32] = "GRIDLOCK \0";
-          Print("GRIDLOCK\0", BASE_X, BASE_Y+GRIDL);
+          char display[32] = "GRIDLOCK \0";
+          Print(display, BASE_X+SHIFT_X, BASE_Y+GRIDL);
         }else{
-          Print(CLEAR_SCREEN, BASE_X, BASE_Y+GRIDL);
+          Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+GRIDL);
         }
         // reset if delay has elapsed
         if (scd->i > scd->delay) {
@@ -352,16 +348,16 @@ void SwitchControl(void* d){
 //Print(a, 40, 70);
        // vTaskDelay(DELAY);
     }
-    vTaskDelay(DELAY);
+    //vTaskDelay(DELAY);
     
   }
 }
 
 // Handle current train behavior
 void CurrentTrain(void* d) { 
-//int lastWake = xTaskGetTickCount();
+int lastWake = xTaskGetTickCount();
   while(1){
- //      vTaskDelayUntil(&lastWake, DELAY );
+       vTaskDelayUntil(&lastWake, DELAY );
     if(trainPresent) {
       if(!gridlock){
         currentTrainData* ctd = &trains[dir_to];
@@ -384,15 +380,15 @@ void CurrentTrain(void* d) {
       Print("CurrentTrain", 0, 80); 
     
     }
-    vTaskDelay(DELAY);
+    //vTaskDelay(DELAY);
   }
 }
 
 // Serial communications
 void SerialCom(void* d) {
-//int lastWake = xTaskGetTickCount();
+int lastWake = xTaskGetTickCount();
   while(1){
- //      vTaskDelayUntil(&lastWake, DELAY );
+       vTaskDelayUntil(&lastWake, DELAY );
     if(serial_flag) {
       serial_flag = false;
       
@@ -403,7 +399,6 @@ void SerialCom(void* d) {
       unsigned char str4[] = "Ppl Cnt:     \r\n\0";
       unsigned char str5[] = "Glb Cnt:       \r\n\0";
       unsigned char str6[] = "Gridlock    \r\n\0";
-      unsigned char str7[] = "Temp:    \r\n\0";
 
       if(!gridlock) {
         if(trainPresent){
@@ -471,48 +466,44 @@ void SerialCom(void* d) {
         }
         //print stuff
         UARTSend((const unsigned char*) str0, UART_STR_LEN);
-      
-        vTaskDelay(40);    
+        //for(int i = 0; i < 50000; i++) {}
+        vTaskDelay(30);    
         UARTSend((const unsigned char*) str1, UART_STR_LEN);
-      
-        vTaskDelay(40); 
+        //for(int i = 0; i < 50000; i++) {} 
+        vTaskDelay(30); 
         UARTSend((const unsigned char*) str2, UART_STR_LEN);
-      
-        vTaskDelay(40); 
+        //for(int i = 0; i < 50000; i++) {}
+        vTaskDelay(30); 
         UARTSend((const unsigned char*) str3, UART_STR_LEN);
-       
-        vTaskDelay(40); 
+        //for(int i = 0; i < 50000; i++) {}
+        vTaskDelay(30); 
         UARTSend((const unsigned char*) str4, UART_STR_LEN);
-        
-        vTaskDelay(40); 
+        //for(int i = 0; i < 50000; i++) {}
+        vTaskDelay(30); 
         UARTSend((const unsigned char*) str5, UART_STR_LEN);
-        
-        vTaskDelay(40);
-        UARTSend((const unsigned char*) str7, UART_STR_LEN);
-
-        vTaskDelay(40); 
+        //for(int i = 0; i < 50000; i++) {}       
+        vTaskDelay(30); 
         UARTSend((const unsigned char*) " \r\n\0", UART_STR_LEN);
-
       } else {
         //print gridlock
         UARTSend((const unsigned char*) str6, UART_STR_LEN);
-        
-        vTaskDelay(40);  
+        //for(int i = 0; i < 50000; i++) {}
+        vTaskDelay(30);  
         UARTSend((const unsigned char*) " \r\n\0", UART_STR_LEN);
       }
-     
+      Print("SerialCom\0", 0, 80);
     }
-    vTaskDelay(DELAY);
+   // vTaskDelay(DELAY);
   }
 }
 
 //Timer stuff
 void Timer(){
-//int lastWake = xTaskGetTickCount();
+int lastWake = xTaskGetTickCount();
 while(1){
     // get the passenger count
     pulse_count = 0;
- //   vTaskDelayUntil(&lastWake, DELAY);
+    vTaskDelayUntil(&lastWake, DELAY);
        
     int pulse_freq = pulse_count;
     pass_count = GetPassengers(pulse_freq);
@@ -521,28 +512,19 @@ while(1){
     }   pulse_count = 0;
     // increment global count and update OLED
      globalCount++;
-     char gc[7];
-     IntToString(globalCount, gc, 7);
-     Print(gc, BASE_X+SHIFT_X, BASE_Y+GLOB);
+     char a[7];
+     IntToString(globalCount, a, 7);
+     Print(a, BASE_X+SHIFT_X, BASE_Y+GLOB);
     
     // get temperature (trigger and read from ADC)
-   unsigned long adc_val = 0;
-   char temp_s[4];
-     ADCProcessorTrigger(ADC_BASE, 0); // trigger ADC sample sequence
-     while(!ADCIntStatus(ADC_BASE, 0, false)) {} // wait for the ADC to finish
-     ADCSequenceDataGet(ADC_BASE, 0, &adc_val); // get the sample data
-     ADCIntClear(ADC_BASE, 0); 
-    int temp = GetTemp(adc_val);
-    IntToString(temp, temp_s, 4);
-    if(temp > 200) { 
-        Print("HIGH!\0", BASE_X+SHIFT_X+26, BASE_Y+TEMP);
-    } else {
-        Print(CLEAR_SCREEN, BASE_X+SHIFT_X+20, BASE_Y+TEMP);
-    }
-     Print(temp_s, BASE_X+SHIFT_X, BASE_Y+TEMP);
-     vTaskDelay(DELAY);
+   unsigned long temp=0;
+   char b[7];
+     ADCSequenceEnable(ADC_BASE, 0); // trigger ADC sample sequence 
+     //while(!ADCIntStatus(ADC_BASE, 0, false)) {} // wait for the ADC to finish
+     ADCSequenceDataGet(ADC_BASE, 0, &temp); // get the sample data
+    IntToString(temp, b, 7);
+     Print(b, BASE_X+SHIFT_X, BASE_Y+TEMP);
    }
-   
 }
 
 //UART SEND  from stellarisware
@@ -806,18 +788,13 @@ int GetPassengers(int pulse_freq) {
     return (int) 3.0/10.0 * pulse_freq - 300;
 }
 
-// returns the temperature given a 10-bit value
-int GetTemp(int adc_val) {
-    return (int) adc_val / (1023.0/330.0); 
-}
-
 //ISR for Timer 1, increment global count
-//void IntTimer1(void)
-//{
+void IntTimer1(void)
+{
   //Clear the interrupt 
-//  TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
-//  globalCount++;
-//}
+  TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+  globalCount++;
+}
 
 //Interrupt for counting the number of FG pulses
 void PulseCount() {

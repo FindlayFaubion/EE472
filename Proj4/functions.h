@@ -24,6 +24,7 @@
 //#include "bitmap.h"
 
 //OUR stuff
+#include "driverlib/adc.h"
 #include "stdbool.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -76,7 +77,7 @@ extern int pulse_count;
 #define BUTTON_PINS 0x000000FF
 #define PULSE_PIN 0x00000004
 #define DELAY 500
-
+    
 // global count lengths for the train light and sound
 #define NTLIGHT_LEN 6 
 #define NTSOUND_LEN 20
@@ -98,7 +99,9 @@ extern int pulse_count;
 #define TO 3*SHIFT_Y
 #define PASS 4*SHIFT_Y
 #define GLOB 5*SHIFT_Y
-#define GRIDL 6*SHIFT_Y
+#define TEMP 6*SHIFT_Y
+#define GRIDL 7*SHIFT_Y
+
 #define UART_SHIFT 15
 #define UART_STR_LEN 27
 
@@ -150,6 +153,7 @@ void TrainCom (void* data);
 void SwitchControl (void* data);
 void CurrentTrain (void* data);
 void SerialCom (void* data); 
+void Timer();
 
 // System related
 void Startup();
@@ -173,3 +177,4 @@ void SetWTData(unsigned char*, unsigned char*);
 void SetSCData(unsigned char*);
 void UARTSend(const unsigned char*, unsigned long);
 void Print(signed char*, int, int);
+int GetTemp(int adc_val);

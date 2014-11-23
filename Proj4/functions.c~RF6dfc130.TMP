@@ -15,7 +15,7 @@
 #include "functions.h"
 #define H
 #endif
-    
+
 
 // Handle timing 
 void Schedule(void* d) {
@@ -253,9 +253,8 @@ void TrainCom(void* d) {
       Print(NA, BASE_X+SHIFT_X, BASE_Y+SZ);
       Print(NA, BASE_X+SHIFT_X, BASE_Y+FROM);
       Print(NA, BASE_X+SHIFT_X, BASE_Y+PASS);
-      Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+GRIDL);
-       Print(CLEAR_SCREEN, BASE_X, BASE_Y+GRIDL);
-
+      Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+ALARM);
+       Print(CLEAR_SCREEN, BASE_X, BASE_Y+ALARM);
       // Clear the buzzer
       //PWMOutputState(PWM0_BASE, PWM_OUT_1_BIT, false);
       
@@ -316,10 +315,10 @@ void SwitchControl(void* d){
       if (gridlock) {
         // issue visual alarm (0.5 sec on, 0.5 off) 
         if (scd->light[globalCount % 2]){ 
-          //char display[32] = "GRIDLOCK \0";
-          Print("GRIDLOCK\0", BASE_X, BASE_Y+GRIDL);
+          char display[32] = "GRIDLOCK \0";
+          Print(display, BASE_X+SHIFT_X, BASE_Y+GRIDL);
         }else{
-          Print(CLEAR_SCREEN, BASE_X, BASE_Y+GRIDL);
+          Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+GRIDL);
         }
         // reset if delay has elapsed
         if (scd->i > scd->delay) {
@@ -403,7 +402,6 @@ void SerialCom(void* d) {
       unsigned char str4[] = "Ppl Cnt:     \r\n\0";
       unsigned char str5[] = "Glb Cnt:       \r\n\0";
       unsigned char str6[] = "Gridlock    \r\n\0";
-      unsigned char str7[] = "Temp:    \r\n\0";
 
       if(!gridlock) {
         if(trainPresent){
@@ -471,36 +469,32 @@ void SerialCom(void* d) {
         }
         //print stuff
         UARTSend((const unsigned char*) str0, UART_STR_LEN);
-      
+        //for(int i = 0; i < 50000; i++) {}
         vTaskDelay(40);    
         UARTSend((const unsigned char*) str1, UART_STR_LEN);
-      
+        //for(int i = 0; i < 50000; i++) {} 
         vTaskDelay(40); 
         UARTSend((const unsigned char*) str2, UART_STR_LEN);
-      
+        //for(int i = 0; i < 50000; i++) {}
         vTaskDelay(40); 
         UARTSend((const unsigned char*) str3, UART_STR_LEN);
-       
+        //for(int i = 0; i < 50000; i++) {}
         vTaskDelay(40); 
         UARTSend((const unsigned char*) str4, UART_STR_LEN);
-        
+        //for(int i = 0; i < 50000; i++) {}
         vTaskDelay(40); 
         UARTSend((const unsigned char*) str5, UART_STR_LEN);
-        
-        vTaskDelay(40);
-        UARTSend((const unsigned char*) str7, UART_STR_LEN);
-
+        //for(int i = 0; i < 50000; i++) {}       
         vTaskDelay(40); 
         UARTSend((const unsigned char*) " \r\n\0", UART_STR_LEN);
-
       } else {
         //print gridlock
         UARTSend((const unsigned char*) str6, UART_STR_LEN);
-        
+        //for(int i = 0; i < 50000; i++) {}
         vTaskDelay(40);  
         UARTSend((const unsigned char*) " \r\n\0", UART_STR_LEN);
       }
-     
+      //Print("SerialCom\0", 0, 80);
     }
     vTaskDelay(DELAY);
   }
@@ -527,19 +521,16 @@ while(1){
     
     // get temperature (trigger and read from ADC)
    unsigned long adc_val = 0;
-   char temp_s[4];
+   char temp[7];
      ADCProcessorTrigger(ADC_BASE, 0); // trigger ADC sample sequence
      while(!ADCIntStatus(ADC_BASE, 0, false)) {} // wait for the ADC to finish
      ADCSequenceDataGet(ADC_BASE, 0, &adc_val); // get the sample data
      ADCIntClear(ADC_BASE, 0); 
-    int temp = GetTemp(adc_val);
-    IntToString(temp, temp_s, 4);
+    IntToString(GetTemp(adc_val), temp, 7);
     if(temp > 200) { 
-        Print("HIGH!\0", BASE_X+SHIFT_X+26, BASE_Y+TEMP);
-    } else {
-        Print(CLEAR_SCREEN, BASE_X+SHIFT_X+20, BASE_Y+TEMP);
+        Print("HIGH TEMP!\0", BASE_X+SHIFT_X, BASE_Y+
     }
-     Print(temp_s, BASE_X+SHIFT_X, BASE_Y+TEMP);
+     Print(temp, BASE_X+SHIFT_X, BASE_Y+TEMP);
      vTaskDelay(DELAY);
    }
    

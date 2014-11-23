@@ -263,7 +263,7 @@ static void IntDefaultHandlerA (void){
 //}
 
 //Interrupt for counting the number of FG pulses
-void PulseCount() {
-  pulse_count++;
-  GPIOPinIntClear(GPIO_PORTF_BASE, PULSE_PIN);
-}
+//void PulseCount() {
+//  pulse_count++;
+//  GPIOPinIntClear(GPIO_PORTF_BASE, PULSE_PIN);
+//}

@@ -160,7 +160,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
   The period of the system clock in nano seconds.  This is used to calculate
   the jitter time in nano seconds. 
 */
-
+  
 #define mainNS_PER_CLOCK ( ( unsigned portLONG ) ( ( 1.0 / ( double ) configCPU_CLOCK_HZ ) * 1000000000.0 ) )
 
 
@@ -172,7 +172,6 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 #define mainMAX_ROWS_64			    ( mainCHARACTER_HEIGHT * 7 )
 #define mainFULL_SCALE			    ( 15 )
 #define ulSSI_FREQUENCY			    ( 3500000UL )
-
 
 /*our globals and stuff*/
 // train state data
@@ -196,6 +195,7 @@ tcb taskArray[4];
 currentTrainData trains[4];
 // random seed
 int seed = 38;
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -251,6 +251,7 @@ xTaskHandle    TrainComHandle;
 xTaskHandle    SwitchControlHandle;
 xTaskHandle    SerialComHandle;
 xTaskHandle    CurrentTrainHandle;
+xTaskHandle    TimerHandle;
 
 /*-----------------------------------------------------------*/
 
@@ -300,9 +301,10 @@ xTaskHandle    CurrentTrainHandle;
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
     xTaskCreate(TrainCom, "AA", 200,NULL, 1,TrainComHandle);
-    xTaskCreate(SwitchControl, "C", 200,NULL, 1,SwitchControlHandle);
-    xTaskCreate(CurrentTrain, "B", 200, (void*) NULL, 1,CurrentTrainHandle);
+    xTaskCreate(SwitchControl, "C", 200,(void*) &scd, 1,SwitchControlHandle);
+    xTaskCreate(CurrentTrain, "B", 200, NULL, 1,CurrentTrainHandle);
     xTaskCreate(SerialCom, "BB", 200,(void*) &scd, 1,SerialComHandle);
+    xTaskCreate(Timer, "BC", 200,(void*) NULL, 1, TimerHandle);
     /*
       Configure the high frequency interrupt used to measure the interrupt
       jitter time. 
