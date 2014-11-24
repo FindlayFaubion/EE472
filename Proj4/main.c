@@ -179,6 +179,7 @@ int dir_to;
 int dir_from;
 int pass_count;
 int pulse_count = 0;
+int temp = 0;
 bool active = false;
 bool serial_flag = true;
 bool gridlock = false;

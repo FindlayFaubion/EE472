@@ -40,10 +40,10 @@ MultiCoreRunAll=1
 [LMIFTDIDriver]
 LMI_ResetMode=0x00000000
 [LMIFTDI]
-LMIFTDIserialNo=06100BCDA
-LMIFTDIfoundProbes=06100BCDA:FF:
+LMIFTDIserialNo=06100171A
+LMIFTDIfoundProbes=06100171A:FF:
 [DebugChecksum]
-Checksum=1042933774
+Checksum=-193832631
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -74,8 +74,9 @@ Count=2
 A0=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\ethernet.c" ""
 A1=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\gpio.c" ""
 A2=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\interrupt.c" ""
-A3=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\sysctl.c" ""
-A4=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\timer.c" ""
-A5=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\uart.c" ""
-Count=6
+A3=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\pwm.c" "U:\FreeRTOS0-3Tasks\FreeRTOS0\Demo\Tasks3\pwm.c"
+A4=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\sysctl.c" ""
+A5=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\timer.c" ""
+A6=_ "C:\Temp\IAR_Relase_DriverLib\ARM\examples\Luminary\Stellaris\src\uart.c" ""
+Count=7
 SuppressDialog=0

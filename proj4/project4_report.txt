@@ -1,0 +1,18 @@
+EE 472 Project 4
+Findlay Faubion, AJ Mallory, Sung Kim 
+
+Status of the Project 
+	- Project completed, all features implemented 
+
+Individual Contributions* 
+	- Sung: ADC/temperature monitor code
+	- Fin: RTOS port
+	- AJ: OLED printing 
+	
+	*Note: Members worked on general development and debugging at the 
+	same time in the lab, so "contributions" are blurred and 
+	were not really done by a single individual. 
+	
+Time Spent
+ - Design: 3 h
+ - Development/coding/debugging: 15-20 h  

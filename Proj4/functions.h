@@ -61,6 +61,7 @@ extern int dir_to;
 extern int dir_from;
 extern int pass_count;
 extern int pulse_count;
+extern int temp;
 
 // Define common constants
 #define OLED_FREQ 1000000
@@ -70,7 +71,7 @@ extern int pulse_count;
 #define GLOBAL_CNT_PER_MIN 120 // global counts per minute
 #define CLEAR_SCREEN "                        \0"
 #define NA "N/A    "
-#define FREQUENCY 75 //frequency used by train buzzer
+#define FREQUENCY 40 //frequency used by train buzzer
 #define OLED_LEVEL 15 //brightness level for the OLED 
 
 // Hardware constants
@@ -103,7 +104,7 @@ extern int pulse_count;
 #define GRIDL 7*SHIFT_Y
 
 #define UART_SHIFT 15
-#define UART_STR_LEN 27
+#define UART_STR_LEN 17
 
 
 //CurrentTrainData

@@ -332,7 +332,7 @@ void SwitchControl(void* d){
       } else {
         // reset if delay has elapsed
         if (scd->i > scd->delay) {
-
+          Print("clear", 0, 70);
           serial_flag = true;
           trainPresent = false;
           scd->gridlockChecked = false;
@@ -392,14 +392,14 @@ void SerialCom(void* d) {
     if(serial_flag) {
       serial_flag = false;
       
-      unsigned char str0[] = "Train Pres:   \r\n\0";
-      unsigned char str1[] = "Train Sz:     \r\n\0";
-      unsigned char str2[] = "From Dir:     \r\n\0";
-      unsigned char str3[] = "To Dir:       \r\n\0";
-      unsigned char str4[] = "Ppl Cnt:      \r\n\0";
+      unsigned char str0[] = "Train Pres:  \r\n\0";
+      unsigned char str1[] = "Train Sz:   \r\n\0";
+      unsigned char str2[] = "From Dir:   \r\n\0";
+      unsigned char str3[] = "To Dir:     \r\n\0";
+      unsigned char str4[] = "Ppl Cnt:     \r\n\0";
       unsigned char str5[] = "Glb Cnt:      \r\n\0";
-      unsigned char str6[] = "Gridlock      \r\n\0";
-      unsigned char str7[] = "Temp:         \r\n\0";
+      unsigned char str6[] = "Gridlock    \r\n\0";
+      unsigned char str7[] = "Temp:       \r\n\0";
 
       if(!gridlock) {
         if(trainPresent){
@@ -499,14 +499,14 @@ void SerialCom(void* d) {
         UARTSend((const unsigned char*) str7, UART_STR_LEN);
 
         vTaskDelay(50); 
-        UARTSend((const unsigned char*) " \r\n\0", 4);
+        UARTSend((const unsigned char*) " \r\n\0", UART_STR_LEN);
        
       } else {
         //print gridlock
         UARTSend((const unsigned char*) str6, UART_STR_LEN);
         
         vTaskDelay(50);  
-        UARTSend((const unsigned char*) " \r\n\0", 4);
+        UARTSend((const unsigned char*) " \r\n\0", UART_STR_LEN);
       }
      
     }
