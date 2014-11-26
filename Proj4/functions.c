@@ -139,7 +139,7 @@ IntEnable(INT_GPIOE);
     //Enable interrupts for GPIO port F
     GPIOPinIntEnable(GPIO_PORTF_BASE, PULSE_PIN);
     IntEnable(INT_GPIOF);
-//    IntMasterEnable();
+    IntMasterEnable();
     
      ///////////////////////////////////////////////////////////////////////////
     // Initialize ISR for timer/global count
@@ -519,8 +519,8 @@ void Timer(){
 //int lastWake = xTaskGetTickCount();
 while(1){
     // get the passenger count
-    pulse_count = 0;
- //   vTaskDelayUntil(&lastWake, DELAY);
+   // pulse_count = 0;
+   // vTaskDelayUntil(&lastWake, DELAY);
        
     int pulse_freq = pulse_count;
     pass_count = GetPassengers(pulse_freq);
@@ -835,6 +835,9 @@ int GetTemp(int adc_val) {
 void PulseCount() {
   pulse_count++;
   GPIOPinIntClear(GPIO_PORTF_BASE, PULSE_PIN);
+//  char* num;
+//  IntToString(pulse_count, num, 5);
+//  Print(num, 50, 70);
 }
 
  //converts an int to a string allocates a string of fixed length
