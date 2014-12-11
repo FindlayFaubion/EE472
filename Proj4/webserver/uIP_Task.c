@@ -76,6 +76,10 @@
 #include "partest.h"
 #include "lcd_message.h"
 
+
+#include "functions.h"
+
+
 struct timer {
   clock_time_t start;
   clock_time_t interval;
@@ -92,10 +96,10 @@ struct timer {
 #define uipIP_ADDR3		19	
 */
 
-#define uipIP_ADDR0		192
-#define uipIP_ADDR1		168
-#define uipIP_ADDR2		1
-#define uipIP_ADDR3		108	
+#define uipIP_ADDR0		128
+#define uipIP_ADDR1		95
+#define uipIP_ADDR2		141
+#define uipIP_ADDR3		225	
 
 /* How long to wait before attempting to connect the MAC again. */
 #define uipINIT_WAIT    100
@@ -338,7 +342,39 @@ xOLEDMessage xOLEDMessage;
         /* Write the message to the LCD. */
 		strcpy( cMessageForDisplay, pcText );
 		xOLEDMessage.pcMessage = ( signed portCHAR * ) cMessageForDisplay;
-        xQueueSend( xOLEDQueue, &xOLEDMessage, portMAX_DELAY );
+//        xQueueSend( xOLEDQueue, &xOLEDMessage, portMAX_DELAY );
+        char* direction = xOLEDMessage.pcMessage;
+        
+    
+    if(!trainPresent[1] && trainPresent[0]){
+          //create second train
+          if(*direction == 'N') {  	
+            dir_from[1] = 0;
+          } else if (*direction == 'E'){
+            dir_from[1] = 1;
+          } else if (*direction == 'S'){
+            dir_from[1] = 2;
+          }else if (*direction == 'W'){
+            dir_from[1] = 3;
+          }
+          trainPresent[1] = true;
+          trainCreated = true;
+    } else if (!trainPresent[0]) {	
+          //Read from all four buttons
+          //unsigned char buttons = GPIOPinRead(GPIO_PORTE_BASE, BUTTON_PINS);
+          //create first train
+          if(*direction == 'N') {  	
+            dir_from[1] = 0;
+          } else if (*direction == 'E'){
+            dir_from[1] = 1;
+          } else if (*direction == 'S'){
+            dir_from[1] = 2;
+          }else if (*direction == 'W'){
+            dir_from[1] = 3;
+          }
+          trainPresent[0] = true;
+          trainCreated = true;
+    }
     }
 }
 

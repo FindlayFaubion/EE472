@@ -460,14 +460,14 @@ const struct httpd_fsdata_file file_404_html[] = {{NULL, data_404_html, data_404
 
 const struct httpd_fsdata_file file_index_html[] = {{file_404_html, data_index_html, data_index_html + 12, sizeof(data_index_html) - 12}};
 
-const struct httpd_fsdata_file file_index_shtml[] = {{file_index_html, data_index_shtml, data_index_shtml + 13, sizeof(data_index_shtml) - 13}};
+//const struct httpd_fsdata_file file_index_shtml[] = {{file_404_html, data_index_shtml, data_index_shtml + 13, sizeof(data_index_shtml) - 13}};
 
-const struct httpd_fsdata_file file_io_shtml[] = {{file_index_shtml, data_io_shtml, data_io_shtml + 10, sizeof(data_io_shtml) - 10}};
+const struct httpd_fsdata_file file_io_shtml[] = {{file_index_html, data_io_shtml, data_io_shtml + 10, sizeof(data_io_shtml) - 10}};
 
 //const struct httpd_fsdata_file file_stats_shtml[] = {{file_io_shtml, data_stats_shtml, data_stats_shtml + 13, sizeof(data_stats_shtml) - 13}};
 
 //const struct httpd_fsdata_file file_tcp_shtml[] = {{file_stats_shtml, data_tcp_shtml, data_tcp_shtml + 11, sizeof(data_tcp_shtml) - 11}};
 
-#define HTTPD_FS_ROOT file_io_shtml
+#define HTTPD_FS_ROOT file_io_html
 
-#define HTTPD_FS_NUMFILES 4
+#define HTTPD_FS_NUMFILES 3

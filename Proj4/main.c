@@ -94,7 +94,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 //  set this value to non 0 to include the web server
 
-#define mainINCLUDE_WEB_SERVER		0
+#define mainINCLUDE_WEB_SERVER		1
 
 ///* Standard includes. */
 //#include <stdio.h>
@@ -151,7 +151,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 
 //  The maximum number of messages that can be waiting for display at any one time.
-  #define mainOLED_QUEUE_SIZE					( 10 )
+  #define mainOLED_QUEUE_SIZE					( 20 )
 
 // Dimensions the buffer into which the jitter time is written. 
   #define mainMAX_MSG_LEN						25
@@ -174,18 +174,26 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 #define ulSSI_FREQUENCY			    ( 3500000UL )
 
 /*our globals and stuff*/
+
+int debug = 0;
+
 // train state data
-int dir_to;
-int dir_from;
-int pass_count;
+int waitTime = 0;
+unsigned char dis_sel = 0;
+int dir_to[2];
+int dir_from[2];
+int pass_count[2];
 int pulse_count = 0;
 int temp = 0;
 bool active = false;
+bool trainCreated = false;
 bool serial_flag = true;
 bool gridlock = false;
-bool trainPresent = false;
-unsigned int trainSize = 0;
+bool trainPresent[2] = {false,false};
+unsigned int trainSize[2] = {0,0};
 unsigned int globalCount = 0;
+unsigned int oldGC = 0;
+unsigned int oldGC_sel = 0;
 currentTrainData ntd;
 currentTrainData etd;
 currentTrainData std;
@@ -196,6 +204,13 @@ tcb taskArray[4];
 currentTrainData trains[4];
 // random seed
 int seed = 38;
+
+//second Train
+//int dir_to[1];
+//int dir_from[1];
+//int pass_count[1];
+//bool trainPresent[1] = false;
+//unsigned int trainSize[1] = 0;
 
 /*-----------------------------------------------------------*/
 
@@ -263,7 +278,7 @@ xTaskHandle    TimerHandle;
  * various Luminary Micro EKs.
  *************************************************************************/
 
- int main( void )
+int main( void )
 {
     prvSetupHardware();
 
@@ -301,14 +316,14 @@ xTaskHandle    TimerHandle;
     
     
     xTaskCreate( vOLEDTask, ( signed portCHAR * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-    xTaskCreate(TrainCom, "AA", 200,NULL, 1,TrainComHandle);
-    xTaskCreate(SwitchControl, "C", 200,(void*) &scd, 1,SwitchControlHandle);
-    xTaskCreate(CurrentTrain, "B", 200, NULL, 1,CurrentTrainHandle);
-    xTaskCreate(SerialCom, "BB", 200,(void*) &scd, 1,SerialComHandle);
-    xTaskCreate(Timer, "BC", 200,(void*) NULL, 1, TimerHandle);
+    xTaskCreate(TrainCom, "Train", 200,NULL, 1,TrainComHandle);
+    xTaskCreate(SwitchControl, "Switch", 200,(void*) &scd, 1,SwitchControlHandle);
+    xTaskCreate(CurrentTrain, "Current", 200, NULL, 1,CurrentTrainHandle);
+    xTaskCreate(SerialCom, "Serial", 200,(void*) &scd, 1,SerialComHandle);
+    xTaskCreate(Timer, "Timer", 200,(void*) NULL, 1, TimerHandle);
     /*
       Configure the high frequency interrupt used to measure the interrupt
-      jitter time. 
+      jitter time.  
     */
     
     vSetupHighFrequencyTimer();
