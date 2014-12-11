@@ -55,17 +55,20 @@ extern int debug;
 // Declare global state variable
 extern unsigned char dis_sel; //d stands for display_selection
 extern bool serial_flag;
-extern bool gridlock;
+extern bool trainCreated;
+extern bool gridlock; //controls updating of oled display
 extern bool trainPresent[2];
 extern unsigned int trainSize[2];
 extern unsigned int globalCount;
 extern unsigned int oldGC;
+extern unsigned int oldGC_sel;
 extern bool gridlockChecked;
 extern int dir_to[2];
 extern int dir_from[2];
 extern int pass_count[2];
 extern int pulse_count;
 extern int temp;
+extern int waitTime;
 
 //second Train Globals
 extern int dir_to2;
@@ -114,6 +117,7 @@ extern unsigned int trainSize2;
 #define GLOB 5*SHIFT_Y
 #define TEMP 6*SHIFT_Y
 #define GRIDL 7*SHIFT_Y
+#define TRN 8*SHIFT_Y
 
 #define UART_SHIFT 15
 #define UART_STR_LEN 17
@@ -191,3 +195,4 @@ void SetSCData(unsigned char*);
 void UARTSend(const unsigned char*, unsigned long);
 void Print(signed char*, int, int);
 int GetTemp(int adc_val);
+void ClearShit(void);

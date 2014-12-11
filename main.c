@@ -151,7 +151,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 
 //  The maximum number of messages that can be waiting for display at any one time.
-  #define mainOLED_QUEUE_SIZE					( 10 )
+  #define mainOLED_QUEUE_SIZE					( 20 )
 
 // Dimensions the buffer into which the jitter time is written. 
   #define mainMAX_MSG_LEN						25
@@ -178,6 +178,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 int debug = 0;
 
 // train state data
+int waitTime = 0;
 unsigned char dis_sel = 0;
 int dir_to[2];
 int dir_from[2];
@@ -185,12 +186,14 @@ int pass_count[2];
 int pulse_count = 0;
 int temp = 0;
 bool active = false;
+bool trainCreated = false;
 bool serial_flag = true;
 bool gridlock = false;
 bool trainPresent[2] = {false,false};
 unsigned int trainSize[2] = {0,0};
 unsigned int globalCount = 0;
 unsigned int oldGC = 0;
+unsigned int oldGC_sel = 0;
 currentTrainData ntd;
 currentTrainData etd;
 currentTrainData std;
@@ -275,7 +278,7 @@ xTaskHandle    TimerHandle;
  * various Luminary Micro EKs.
  *************************************************************************/
 
- int main( void )
+int main( void )
 {
     prvSetupHardware();
 
