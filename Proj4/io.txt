@@ -1,0 +1,6 @@
+/io.shtml<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html>  <head>    
+<title>FreeRTOS.org uIP WEB server demo</title>  </head>  <BODY background="http://statelymcdanielmanor.files.wordpress.com/2013/09/train-wreck.jpg" style="background-repeat: no-repeat;" bgcolor="#FFFFFF"><font face="arial">
+<a href="index.shtml">RTOS Stats</a> <b>|</b> 
+ <a href="io.shtml">Conductor</a><br><p><hr><b>Train Generation</b><br><p>
+Enter the train from direction, then hit the "Create Train" button!
+<p><form name="aForm" action="/io.shtml" method="get">%! led-io<p><input type="submit" value="Update IO"></form><br><p></font></body></html>

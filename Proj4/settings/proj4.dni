@@ -43,7 +43,7 @@ LMI_ResetMode=0x00000000
 LMIFTDIserialNo=061001D6A
 LMIFTDIfoundProbes=
 [DebugChecksum]
-Checksum=758688745
+Checksum=-132516019
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -54,12 +54,11 @@ MixedMode=1
 [Disassemble mode]
 mode=0
 [Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\functions.c}.22.3" 0 0 0 0 "" 0 ""
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\functions.c}.18.1" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "0x0000010A" 0 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\main.c}.256.1" 0 0 0 0 "" 0 ""
-Bp3=_ "STD_CODE" "{$PROJ_DIR$\webserver\uIP_Task.c}.323.9" 1 0 0 0 "" 0 ""
-Bp4=_ "STD_CODE" "{$PROJ_DIR$\main.c}.281.1" 0 0 0 0 "" 0 ""
-Count=5
+Bp2=_ "STD_CODE" "{$PROJ_DIR$\main.c}.259.1" 0 0 0 0 "" 0 ""
+Bp3=_ "STD_CODE" "{$PROJ_DIR$\main.c}.284.1" 0 0 0 0 "" 0 ""
+Count=4
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

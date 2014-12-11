@@ -17,71 +17,6 @@
 #endif
     
 
-// Handle timing 
-//void Schedule(void* d) {
-//	int i;
-//        
-//        int glb_cnt_prev = globalCount;
-//        // Display global count
-//        char a[7];
-//        IntToString(globalCount, a, 7);
-//        RIT128x96x4StringDraw(a, BASE_X+SHIFT_X, BASE_Y+GLOB, OLED_LEVEL);
-//        
-//        // execute queue
-//	for(i = 0; taskArray[i].y; i++) { 
-//		(*taskArray[i].x)(taskArray[i].y);
-//	}
-//
-//	// update queue
-//	int p = 0;
-//	// traincom
-//	if (!trainPresent && !gridlock) {
-//		taskArray[p].x = TrainCom;
-//		taskArray[p].y = (void*) &ntd; // data unused
-//		p++;
-//	}
-//	// switch control
-//	if(trainPresent || gridlock) {
-//		taskArray[p].x = SwitchControl;
-//		taskArray[p].y = (void*) &scd;
-//		p++;
-//	}
-//	// train present (if gridlock, trainpresent == false)
-//	if(trainPresent) {
-//		taskArray[p].x = CurrentTrain;
-//		taskArray[p].y = (void*) &trains[dir_to];
-//		p++;
-//	}
-//	// serial com
-//	if(serial_flag) {
-//                serial_flag = false;
-//		taskArray[p].x = SerialCom;
-//		taskArray[p].y = (void*) &ntd; // data unused
-//		p++;
-//	}
-//	// terminate task queue
-//	taskArray[p].y = 0;
-//        
-//        // get the frequency and update the number of passengers  
-//        int pulse_freq = pulse_count * 2;
-//        if(trainPresent) {
-//        pass_count = GetPassengers(pulse_freq);
-//        if (pass_count < 0) {
-//          pass_count = 0;
-//        }
-//        } else if(trainPresent2) {
-//         pass_count2 = GetPassengers(pulse_freq);
-//        if (pass_count2 < 0) {
-//          pass_count2 = 0;
-//        }    
-//        }
-//        pulse_count = 0;
-//        
-//        // Delay until the next global count
-//        while(glb_cnt_prev >= globalCount) {};
-//     
-//}
-
 
 // Startup function
 void Startup(){
@@ -98,28 +33,6 @@ void Startup(){
     ///////////////////////////////////////////////////////////////////////////
     // Initialize ISR for pushbuttons
     
-//    //Clear the default ISR handler and install IntGPIOe as the handler:
-//
-//    GPIOPortIntUnregister(INT_GPIOE);
-//    GPIOPortIntRegister(INT_GPIOE, ButtonHandler);
-//
-//    //Enable GPIO port E, set pin 0 as an input
-//    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);    
-//    GPIOPinTypeGPIOInput(GPIO_PORTE_BASE, BUTTON_PINS);
-//    
-//    GPIODirModeSet(GPIO_PORTE_BASE, GPIO_PIN_0, GPIO_DIR_MODE_IN);
-//
-//    //Activate the pull-up on GPIO port E
-//    GPIOPadConfigSet(GPIO_PORTE_BASE, BUTTON_PINS, GPIO_STRENGTH_2MA,
-//                     GPIO_PIN_TYPE_STD_WPU);
-//    
-//    //Configure GPIO port E as triggering on falling edges
-//    GPIOIntTypeSet(GPIO_PORTE_BASE, BUTTON_PINS, GPIO_FALLING_EDGE);
-//    
-//    //Enable interrupts for GPIO port E
-//    GPIOPinIntEnable(INT_GPIOE, BUTTON_PINS);
-//    IntEnable(INT_GPIOE);
-//    IntMasterEnable();
     
 SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
 GPIOPinTypeGPIOInput(GPIO_PORTE_BASE, (GPIO_PIN_3| GPIO_PIN_2 |GPIO_PIN_1 |GPIO_PIN_0));
@@ -149,6 +62,26 @@ IntEnable(INT_GPIOE);
     IntMasterEnable();
     
      ///////////////////////////////////////////////////////////////////////////
+/*
+        // Initialize ISR for function generator 
+    //Enable GPIO port, set pin as an input
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);    
+    GPIOPinTypeGPIOInput(GPIO_PORTD_BASE, PULSE_PIN);
+
+    //Activate the pull-up on GPIO port
+    GPIOPadConfigSet(GPIO_PORTD_BASE, PULSE_PIN, GPIO_STRENGTH_2MA,
+                     GPIO_PIN_TYPE_STD_WPU);
+    
+    //Configure GPIO port as triggering on falling edges
+    GPIOIntTypeSet(GPIO_PORTD_BASE, PULSE_PIN, GPIO_FALLING_EDGE);
+    
+    //Enable interrupts for GPIO port
+    GPIOPinIntEnable(GPIO_PORTD_BASE, PULSE_PIN);
+    IntEnable(INT_GPIOD);
+    IntMasterEnable(); // where does this go
+*/
+     ///////////////////////////////////////////////////////////////////////////
+
     // Initialize ISR for timer/global count
     
     //TimerIntUnregister(TIMER1_BASE, TIMER_A);
@@ -157,14 +90,6 @@ IntEnable(INT_GPIOE);
     //Enable Timer 1    
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
 
-    //Configure Timer 1 and set the timebase to 0.5 second    
-    //TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
-    //TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet() / 2);    
-    
-    //Enable interrupts for Timer0 and activate it
-    //IntEnable(INT_TIMER1A);
-    //TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
-    //TimerEnable(TIMER1_BASE, TIMER_A);
     
     ///////////////////////////////////////////////////////////////////////////
     // Initialize serial comm
@@ -262,22 +187,26 @@ void TrainCom(void* d) {
       dir_to[1] = RandomInt(0, 3);
       
       // create a random value for trainSize between 2 and 9
-      trainSize[1] = 8;// RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
+      trainSize[1] = 2;//RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
+
       serial_flag = true; 
       gridlock = true;
       trainCreated = false;
+      trainCreated_passCount = true;
 
     }else if (trainCreated){
       //Create first train
       dir_to[0] = RandomInt(0, 3);
       
       // create a random value for trainSize between 2 and 9
-      trainSize[0] = 8;//RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
+      trainSize[0] = 2;//RandomInt(TRAIN_SIZE_MIN, TRAIN_SIZE_MAX);
       
       // reset the delay counter for light and sound
+
       serial_flag = true;
       gridlock = true;
       trainCreated = false;
+      trainCreated_passCount = true;
     }
     vTaskDelay(DELAY);
   }
@@ -352,35 +281,30 @@ void CurrentTrain(void* d) {
                 // Display to myTerm
                 serial_flag = true;
 
-                // Arrays for display string
-                char train_sz[2];
-                char passengers[4];
+                //Print dir_f
                 char dir_f[7];
-                
-                // Creating Strings
                 GetDirection(dir_from[dis_sel], dir_f);
-                IntToString(trainSize[dis_sel], train_sz, 2);
-                IntToString(pass_count[dis_sel], passengers, 4);
-
-                //Printing things to LCD
-                Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+SZ);
-                Print("Y \0", BASE_X+SHIFT_X, BASE_Y+PRES);
-                Print(passengers, BASE_X+SHIFT_X, BASE_Y+PASS);
-                Print(train_sz, BASE_X+SHIFT_X, BASE_Y+SZ);
                 Print(dir_f, BASE_X+SHIFT_X, BASE_Y+FROM);
 
-                gridlock = false;
-                
-                //For debug
-//                char display[7];
-//                GetDirection(dir_to[dis_sel], display);
-//                Print(display, BASE_X+SHIFT_X, BASE_Y+TO);
+                //print passenger count
+                char passengers[4];
+                IntToString(pass_count[dis_sel], passengers, 4);
+                Print(passengers, BASE_X+SHIFT_X, BASE_Y+PASS);
+
+                // print train size
+                Print(CLEAR_SCREEN, BASE_X+SHIFT_X, BASE_Y+SZ);
+                char train_sz[2];
+                IntToString(trainSize[dis_sel], train_sz, 2);
+                Print(train_sz, BASE_X+SHIFT_X, BASE_Y+SZ);
+
+                //Printing things to LCD
+                Print("Y \0", BASE_X+SHIFT_X, BASE_Y+PRES);
 
             }else{
                 ClearShit();
             }
+            gridlock = false;
         }
-
 
       }  
     vTaskDelay(DELAY);    
@@ -519,23 +443,25 @@ void SerialCom(void* d) {
 
 //Timer stuff
 void Timer(){
-//int lastWake = xTaskGetTickCount();
+
 while(1){
-    // get the passenger count
-   // pulse_count = 0;
-   // vTaskDelayUntil(&lastWake, DELAY);
-       
-    int pulse_freq = pulse_count;
-        if(trainPresent[0] && trainPresent[1]) {
+    
+// get the passenger count  
+    int pulse_freq = 2 * pulse_count;
+        if(trainPresent[0] && trainPresent[1] && trainCreated_passCount) {
             pass_count[1] = GetPassengers(pulse_freq);
             if (pass_count[1] < 0) {
                 pass_count[1] = 0;
             }
-        } else if(trainPresent[0]) {
+            gridlock = true;
+            trainCreated_passCount = false;
+        } else if(trainPresent[0] && trainCreated_passCount) {
             pass_count[0] = GetPassengers(pulse_freq);
             if (pass_count[0] < 0) {
                 pass_count[0] = 0;
             }    
+            gridlock = true;
+            trainCreated_passCount = false;
         }
         pulse_count = 0;
 
@@ -548,8 +474,10 @@ while(1){
      globalCount++;
      char gc[7];
      IntToString(globalCount, gc, 7);
+     //IntToString(pulse_count, gc, 7);
      Print(gc, BASE_X+SHIFT_X, BASE_Y+GLOB);
 
+//Display train number
     char train_num[2];
     IntToString(dis_sel+1, train_num, 2);
     Print(train_num, BASE_X + SHIFT_X, BASE_Y + TRN);
@@ -564,8 +492,6 @@ while(1){
                 }
         }
      waitTime++;
-
-
     
     // get temperature (trigger and read from ADC)
    unsigned long adc_val = 0;
@@ -869,6 +795,7 @@ void ButtonHandler() {
 // Returns the number of passengers, given a pulse frequency
 int GetPassengers(int pulse_freq) {
     return (int) 3.0/10.0 * pulse_freq - 300;
+    
 }
 
 // returns the temperature given a 10-bit value
@@ -876,22 +803,26 @@ int GetTemp(int adc_val) {
     return (int) adc_val / (1023.0/330.0); 
 }
 
+//Interrupt for reading the select button
+void SelectHandler() {
+    pulse_count++;
+    GPIOPinIntClear(GPIO_PORTF_BASE, (SELECT_PIN | PULSE_PIN)); 
+ //   GPIOPinIntClear(GPIO_PORTD_BASE, PULSE_PIN);
+
+    unsigned char butt;
+    butt = GPIOPinRead(GPIO_PORTF_BASE, 0xFF);
+    butt = ~butt;
+    if ((butt / 2) % 2 && oldGC_sel < globalCount - 1) {
+        oldGC_sel = globalCount;
+        gridlock = true;
+        dis_sel = (dis_sel+1)%2;
+    }
+}
+
 //Interrupt for counting the number of FG pulses
 void PulseCount() {
     pulse_count++;
-    GPIOPinIntClear(GPIO_PORTF_BASE, PULSE_PIN);
-    GPIOPinIntClear(GPIO_PORTF_BASE, SELECT_PIN); 
-
-    unsigned char butt;
-    butt = GPIOPinRead(GPIO_PORTF_BASE, SELECT_PIN);
-    if (oldGC_sel < globalCount - 1) {
-        oldGC_sel = globalCount;
-        gridlock = true;
-        butt = ~butt;
-        if(butt){
-            dis_sel = (dis_sel+1)%2;
-        }
-    }
+    GPIOPinIntClear(GPIO_PORTD_BASE, PULSE_PIN); 
 }
 
  //converts an int to a string allocates a string of fixed length

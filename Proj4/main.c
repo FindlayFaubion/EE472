@@ -151,7 +151,7 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 
 
 //  The maximum number of messages that can be waiting for display at any one time.
-  #define mainOLED_QUEUE_SIZE					( 20 )
+  #define mainOLED_QUEUE_SIZE					( 30 )
 
 // Dimensions the buffer into which the jitter time is written. 
   #define mainMAX_MSG_LEN						25
@@ -173,6 +173,8 @@ and the TCP/IP stack together cannot be accommodated with the 32K size limit. */
 #define mainFULL_SCALE			    ( 15 )
 #define ulSSI_FREQUENCY			    ( 3500000UL )
 
+    // Webpage background image from: http://statelymcdanielmanor.files.wordpress.com/2013/09/train-wreck.jpg
+
 /*our globals and stuff*/
 
 int debug = 0;
@@ -181,12 +183,13 @@ int debug = 0;
 int waitTime = 0;
 unsigned char dis_sel = 0;
 int dir_to[2];
-int dir_from[2];
+int dir_from[2] = {1,1};
 int pass_count[2];
 int pulse_count = 0;
 int temp = 0;
 bool active = false;
 bool trainCreated = false;
+bool trainCreated_passCount = false;
 bool serial_flag = true;
 bool gridlock = false;
 bool trainPresent[2] = {false,false};
@@ -295,6 +298,7 @@ int main( void )
         the 32K code size limit. 
     */
     
+
     #if mainINCLUDE_WEB_SERVER != 0
     {
       /* 

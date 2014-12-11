@@ -344,17 +344,17 @@ xOLEDMessage xOLEDMessage;
 		xOLEDMessage.pcMessage = ( signed portCHAR * ) cMessageForDisplay;
 //        xQueueSend( xOLEDQueue, &xOLEDMessage, portMAX_DELAY );
         char* direction = xOLEDMessage.pcMessage;
-        
+        Print(direction, 60, 0);
     
     if(!trainPresent[1] && trainPresent[0]){
           //create second train
-          if(*direction == 'N') {  	
-            dir_from[1] = 0;
-          } else if (*direction == 'E'){
+          if(*direction == 'E') {  	
             dir_from[1] = 1;
+          } else if (*direction == 'N'){
+            dir_from[1] = 0;
           } else if (*direction == 'S'){
             dir_from[1] = 2;
-          }else if (*direction == 'W'){
+          }else {//(*direction == 'W'){
             dir_from[1] = 3;
           }
           trainPresent[1] = true;
@@ -363,13 +363,13 @@ xOLEDMessage xOLEDMessage;
           //Read from all four buttons
           //unsigned char buttons = GPIOPinRead(GPIO_PORTE_BASE, BUTTON_PINS);
           //create first train
-          if(*direction == 'N') {  	
-            dir_from[1] = 0;
-          } else if (*direction == 'E'){
+          if(*direction == 'E') {  	
             dir_from[1] = 1;
+          } else if (*direction == 'N'){
+            dir_from[1] = 0;
           } else if (*direction == 'S'){
             dir_from[1] = 2;
-          }else if (*direction == 'W'){
+          }else {//(*direction == 'W'){
             dir_from[1] = 3;
           }
           trainPresent[0] = true;

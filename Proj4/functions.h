@@ -56,6 +56,7 @@ extern int debug;
 extern unsigned char dis_sel; //d stands for display_selection
 extern bool serial_flag;
 extern bool trainCreated;
+extern bool trainCreated_passCount;
 extern bool gridlock; //controls updating of oled display
 extern bool trainPresent[2];
 extern unsigned int trainSize[2];
@@ -180,6 +181,7 @@ void InitBuzzer(int freq);
 void ButtonHandler();
 void IntTimer1();
 void PulseCount();
+void SelectHandler();
 
 // Misc helper functions
 int RandomInt(int low, int high);
